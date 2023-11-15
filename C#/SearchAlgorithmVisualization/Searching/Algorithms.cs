@@ -35,14 +35,12 @@ namespace SearchAlgorithmVisualization.Searching
         }
 
         // Utility function to sort given nodes by:
-        //   Heuristic Cost
         //   Label Length
         //   Lexical representation of label
         //     Ex: 'B' > 'A', 'Z' < 'AA', 'AA' > 'Y', 'BA' > 'AZ'
         private static List<Node> SortNodes(List<Node> nodes)
         {
-            return nodes.OrderBy(n => n.Heuristics)
-                        .ThenBy(n => n.Label.Length)
+            return nodes.OrderBy(n => n.Label.Length)
                         .ThenBy(n => n.Label).ToList();
         }
 
