@@ -45,6 +45,8 @@
             CreationSectionLabel = new Label();
             ControlPanelMainLabel = new Label();
             CreationModePanel = new Panel();
+            NodeEditButton = new Button();
+            NodeDeleteButton = new Button();
             EdgeModeRadioButton = new RadioButton();
             NodeModeRadioButton = new RadioButton();
             EdgeModeLabel = new Label();
@@ -245,7 +247,7 @@
             CreationSectionLabel.Name = "CreationSectionLabel";
             CreationSectionLabel.Size = new Size(214, 40);
             CreationSectionLabel.TabIndex = 1;
-            CreationSectionLabel.Text = "Creation Mode";
+            CreationSectionLabel.Text = "Graph Objects";
             CreationSectionLabel.TextAlign = ContentAlignment.MiddleCenter;
             // 
             // ControlPanelMainLabel
@@ -263,6 +265,8 @@
             // CreationModePanel
             // 
             CreationModePanel.BackColor = Color.MediumPurple;
+            CreationModePanel.Controls.Add(NodeEditButton);
+            CreationModePanel.Controls.Add(NodeDeleteButton);
             CreationModePanel.Controls.Add(EdgeModeRadioButton);
             CreationModePanel.Controls.Add(NodeModeRadioButton);
             CreationModePanel.Controls.Add(EdgeModeLabel);
@@ -272,23 +276,44 @@
             CreationModePanel.Size = new Size(220, 120);
             CreationModePanel.TabIndex = 6;
             // 
+            // NodeEditButton
+            // 
+            NodeEditButton.Cursor = Cursors.Hand;
+            NodeEditButton.Location = new Point(36, 46);
+            NodeEditButton.Name = "NodeEditButton";
+            NodeEditButton.Size = new Size(26, 23);
+            NodeEditButton.TabIndex = 6;
+            NodeEditButton.UseVisualStyleBackColor = true;
+            // 
+            // NodeDeleteButton
+            // 
+            NodeDeleteButton.Cursor = Cursors.Hand;
+            NodeDeleteButton.Image = Properties.Resources.trash_icon16;
+            NodeDeleteButton.Location = new Point(68, 46);
+            NodeDeleteButton.Name = "NodeDeleteButton";
+            NodeDeleteButton.Size = new Size(26, 23);
+            NodeDeleteButton.TabIndex = 0;
+            NodeDeleteButton.UseVisualStyleBackColor = true;
+            NodeDeleteButton.Click += NodeDeleteButton_Click;
+            // 
             // EdgeModeRadioButton
             // 
             EdgeModeRadioButton.Cursor = Cursors.Hand;
             EdgeModeRadioButton.Font = new Font("Segoe UI", 20.25F, FontStyle.Regular, GraphicsUnit.Point);
-            EdgeModeRadioButton.Location = new Point(141, 79);
+            EdgeModeRadioButton.Location = new Point(175, 79);
             EdgeModeRadioButton.Name = "EdgeModeRadioButton";
             EdgeModeRadioButton.Size = new Size(13, 30);
             EdgeModeRadioButton.TabIndex = 5;
             EdgeModeRadioButton.TextAlign = ContentAlignment.MiddleCenter;
             EdgeModeRadioButton.UseVisualStyleBackColor = true;
+            EdgeModeRadioButton.CheckedChanged += EdgeModeRadioButton_CheckedChanged;
             // 
             // NodeModeRadioButton
             // 
             NodeModeRadioButton.Checked = true;
             NodeModeRadioButton.Cursor = Cursors.Hand;
             NodeModeRadioButton.Font = new Font("Segoe UI", 20.25F, FontStyle.Regular, GraphicsUnit.Point);
-            NodeModeRadioButton.Location = new Point(141, 43);
+            NodeModeRadioButton.Location = new Point(175, 43);
             NodeModeRadioButton.Name = "NodeModeRadioButton";
             NodeModeRadioButton.Size = new Size(13, 30);
             NodeModeRadioButton.TabIndex = 4;
@@ -302,7 +327,7 @@
             EdgeModeLabel.BackColor = Color.Transparent;
             EdgeModeLabel.Font = new Font("Arial", 12F, FontStyle.Regular, GraphicsUnit.Point);
             EdgeModeLabel.ForeColor = Color.WhiteSmoke;
-            EdgeModeLabel.Location = new Point(51, 69);
+            EdgeModeLabel.Location = new Point(85, 69);
             EdgeModeLabel.Name = "EdgeModeLabel";
             EdgeModeLabel.Size = new Size(84, 40);
             EdgeModeLabel.TabIndex = 3;
@@ -314,7 +339,7 @@
             NodeModeLabel.BackColor = Color.Transparent;
             NodeModeLabel.Font = new Font("Arial", 12F, FontStyle.Regular, GraphicsUnit.Point);
             NodeModeLabel.ForeColor = Color.WhiteSmoke;
-            NodeModeLabel.Location = new Point(51, 36);
+            NodeModeLabel.Location = new Point(85, 36);
             NodeModeLabel.Name = "NodeModeLabel";
             NodeModeLabel.Size = new Size(84, 40);
             NodeModeLabel.TabIndex = 2;
@@ -542,5 +567,7 @@
         private Button SimulationStepForwardButton;
         private Label SimulationNavigationLabel;
         private Label SimulationSpeedLabel;
+        private Button NodeEditButton;
+        private Button NodeDeleteButton;
     }
 }

@@ -68,6 +68,10 @@ namespace SearchAlgorithmVisualization
         private bool ShowHeuristicsText = true;
         private bool ShowWeightsText = true;
 
+        // Edit, delete flags
+        private bool DeleteMode = false;
+        private int NumberOfRecentlyDeleted = 0; // Track the number of recently deleted nodes so that the naming will not break in the GetNodeName()
+
         public MainForm()
         {
             InitializeComponent();
@@ -147,7 +151,7 @@ namespace SearchAlgorithmVisualization
         private string GetNodeName<T>(List<T> l)
         {
             // Increment list count to make it start at 'A'
-            int listCount = l.Count + 1;
+            int listCount = l.Count + this.NumberOfRecentlyDeleted + 1;
             int alphabetLength = 'Z' - 'A' + 1;
 
             string res = "";
@@ -216,9 +220,7 @@ namespace SearchAlgorithmVisualization
             // Catch invalid parameters
             if (e == null) return;
 
-            if (p == null) { p = Pens.Black; }
-
-            p.Width = w ?? 2;
+            if (p == null) { p = new Pen(Brushes.Black, 2); }
 
             // Draw the edge connection as lines
             // Draw first to make it appear behind
@@ -329,6 +331,26 @@ namespace SearchAlgorithmVisualization
 
                 // Render simulation status after click of a selected node
                 this.RenderSimulationStatus();
+
+                return;
+            }
+
+            // For Deleting
+            else if (this.DeleteMode)
+            {
+                Node? n = this.GetClickedNode(this.nodes, mouseX, mouseY);
+
+                if (n == null) return;
+
+                // Find the node in the list and remove it
+                this.nodes.Remove(n);
+                this.NumberOfRecentlyDeleted++;
+
+                // Find the edge in the list and remove the connections that has the selected node
+                this.edges = this.edges.Where(e => !e.HasMember(n)).ToList();
+
+                // Refresh the drawing panel to show the changes
+                this.DrawingPanel.Invalidate();
 
                 return;
             }
@@ -499,6 +521,9 @@ namespace SearchAlgorithmVisualization
         {
             if (!this.NodeModeRadioButton.Checked) return;
 
+            // Reset edit or delete mode
+            this.DeleteMode = false;
+
             // Reset the setting of edge points
             if (this.edgePointA != null)
             {
@@ -510,6 +535,14 @@ namespace SearchAlgorithmVisualization
             }
 
             this.edgePointA = this.edgePointB = null;
+        }
+
+        private void EdgeModeRadioButton_CheckedChanged(object sender, EventArgs e)
+        {
+            if (!this.EdgeModeRadioButton.Checked) return;
+
+            // Reset edit or delete mode
+            this.DeleteMode = false;
         }
 
         // This will clear all nodes and edges in the graph
@@ -1122,7 +1155,7 @@ namespace SearchAlgorithmVisualization
         {
             // Only implement if the creation mode is edge mode
             // Only implement if the program is waiting for a starting or ending search node
-            if (!this.EdgeModeRadioButton.Checked && !this.InitializeSimulation)
+            if (!this.EdgeModeRadioButton.Checked && !this.InitializeSimulation && !this.DeleteMode)
             {
                 // Change cursor to default
                 // Debounce to prevent too much calls
@@ -1330,6 +1363,18 @@ namespace SearchAlgorithmVisualization
 
             // Update simulation navigations availability
             this.UpdateSimulationNavigationButtonsAvailability();
+        }
+
+        // Sets deletion mode and waits for user to click a node to be deleted
+        private void NodeDeleteButton_Click(object sender, EventArgs e)
+        {
+            if (this.DeleteMode) return;
+
+            // Set delete flag
+            this.DeleteMode = true;
+
+            // Reset checked state for the radio buttons as they will be the one to cancel the deletion
+            this.NodeModeRadioButton.Checked = this.EdgeModeRadioButton.Checked = false;
         }
     }
 }
