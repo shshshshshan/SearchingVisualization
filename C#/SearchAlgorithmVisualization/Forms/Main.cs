@@ -26,9 +26,6 @@ namespace SearchAlgorithmVisualization
         private Debouncer MouseDefaultDebouncer = new Debouncer();
         private Debouncer LogsDebouncer = new Debouncer();
 
-        // Pen for drawing the edges
-        Pen edgePen = new Pen(Color.Black, 2);
-
         // Graphics object for drawing in the drawing panel
         Graphics g;
 
@@ -214,16 +211,18 @@ namespace SearchAlgorithmVisualization
         // Utility function to render a single edge
         // This function re-renders the source and destination nodes as well to
         //   fix the colors and make the edge appear behind the nodes
-        private void RenderEdge(Edge e, Pen? p = null)
+        private void RenderEdge(Edge e, float? w = null, Pen? p = null)
         {
             // Catch invalid parameters
             if (e == null) return;
 
-            if (p == null) { p = this.edgePen; }
+            if (p == null) { p = Pens.Black; }
+
+            p.Width = w ?? 2;
 
             // Draw the edge connection as lines
             // Draw first to make it appear behind
-            this.g.DrawLine(this.edgePen, e.PointA.X, e.PointA.Y, e.PointB.X, e.PointB.Y);
+            this.g.DrawLine(p, e.PointA.X, e.PointA.Y, e.PointB.X, e.PointB.Y);
 
             // Re-draw source and destination to reset it to default
             this.RenderNode(e.PointA);
