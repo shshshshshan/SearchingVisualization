@@ -113,6 +113,46 @@ namespace SearchAlgorithmVisualization.Properties {
         /// <summary>
         ///   Looks up a localized resource of type System.Drawing.Bitmap.
         /// </summary>
+        internal static System.Drawing.Bitmap edit_icon16 {
+            get {
+                object obj = ResourceManager.GetObject("edit_icon16", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized resource of type System.Drawing.Bitmap.
+        /// </summary>
+        internal static System.Drawing.Bitmap edit_icon20 {
+            get {
+                object obj = ResourceManager.GetObject("edit_icon20", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized resource of type System.Drawing.Bitmap.
+        /// </summary>
+        internal static System.Drawing.Bitmap edit_icon32 {
+            get {
+                object obj = ResourceManager.GetObject("edit_icon32", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized resource of type System.Drawing.Bitmap.
+        /// </summary>
+        internal static System.Drawing.Bitmap edit_icon64 {
+            get {
+                object obj = ResourceManager.GetObject("edit_icon64", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized resource of type System.Drawing.Bitmap.
+        /// </summary>
         internal static System.Drawing.Bitmap expand_icon {
             get {
                 object obj = ResourceManager.GetObject("expand_icon", resourceCulture);
@@ -196,6 +236,46 @@ namespace SearchAlgorithmVisualization.Properties {
         internal static System.Drawing.Bitmap minus_icon64 {
             get {
                 object obj = ResourceManager.GetObject("minus_icon64", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized resource of type System.Drawing.Bitmap.
+        /// </summary>
+        internal static System.Drawing.Bitmap trash_icon16 {
+            get {
+                object obj = ResourceManager.GetObject("trash_icon16", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized resource of type System.Drawing.Bitmap.
+        /// </summary>
+        internal static System.Drawing.Bitmap trash_icon20 {
+            get {
+                object obj = ResourceManager.GetObject("trash_icon20", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized resource of type System.Drawing.Bitmap.
+        /// </summary>
+        internal static System.Drawing.Bitmap trash_icon32 {
+            get {
+                object obj = ResourceManager.GetObject("trash_icon32", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized resource of type System.Drawing.Bitmap.
+        /// </summary>
+        internal static System.Drawing.Bitmap trash_icon64 {
+            get {
+                object obj = ResourceManager.GetObject("trash_icon64", resourceCulture);
                 return ((System.Drawing.Bitmap)(obj));
             }
         }
