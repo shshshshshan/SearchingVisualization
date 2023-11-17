@@ -17,7 +17,7 @@ namespace SearchAlgorithmVisualization
             // see https://aka.ms/applicationconfiguration.
 
             // Allocate console
-            AllocConsole();
+            // AllocConsole();
 
             ApplicationConfiguration.Initialize();
             Application.Run(new MainForm());
