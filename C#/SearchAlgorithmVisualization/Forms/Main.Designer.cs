@@ -64,6 +64,8 @@
             SimulationContolsLabel = new Label();
             DrawingPanel = new Panel();
             AnimationClock = new System.Windows.Forms.Timer(components);
+            EdgeEditButton = new Button();
+            EdgeDeleteButton = new Button();
             ControlPanel.SuspendLayout();
             LogsPanel.SuspendLayout();
             HasTargetNodePanel.SuspendLayout();
@@ -265,6 +267,8 @@
             // CreationModePanel
             // 
             CreationModePanel.BackColor = Color.MediumPurple;
+            CreationModePanel.Controls.Add(EdgeEditButton);
+            CreationModePanel.Controls.Add(EdgeDeleteButton);
             CreationModePanel.Controls.Add(NodeEditButton);
             CreationModePanel.Controls.Add(NodeDeleteButton);
             CreationModePanel.Controls.Add(EdgeModeRadioButton);
@@ -510,6 +514,28 @@
             AnimationClock.Interval = 1000;
             AnimationClock.Tick += AnimationClock_Tick;
             // 
+            // EdgeEditButton
+            // 
+            EdgeEditButton.Cursor = Cursors.Hand;
+            EdgeEditButton.Image = Properties.Resources.edit_icon16;
+            EdgeEditButton.Location = new Point(36, 79);
+            EdgeEditButton.Name = "EdgeEditButton";
+            EdgeEditButton.Size = new Size(26, 23);
+            EdgeEditButton.TabIndex = 8;
+            EdgeEditButton.UseVisualStyleBackColor = true;
+            EdgeEditButton.Click += EdgeEditButton_Click;
+            // 
+            // EdgeDeleteButton
+            // 
+            EdgeDeleteButton.Cursor = Cursors.Hand;
+            EdgeDeleteButton.Image = Properties.Resources.trash_icon16;
+            EdgeDeleteButton.Location = new Point(68, 79);
+            EdgeDeleteButton.Name = "EdgeDeleteButton";
+            EdgeDeleteButton.Size = new Size(26, 23);
+            EdgeDeleteButton.TabIndex = 7;
+            EdgeDeleteButton.UseVisualStyleBackColor = true;
+            EdgeDeleteButton.Click += EdgeDeleteButton_Click;
+            // 
             // MainForm
             // 
             AutoScaleDimensions = new SizeF(7F, 15F);
@@ -571,5 +597,7 @@
         private Label SimulationSpeedLabel;
         private Button NodeEditButton;
         private Button NodeDeleteButton;
+        private Button EdgeEditButton;
+        private Button EdgeDeleteButton;
     }
 }

@@ -12,7 +12,7 @@ namespace SearchAlgorithmVisualization.Searching
         public Node PointA { get; private set; }
         public Node PointB { get; private set; }
 
-        public int Weight { get; private set; }
+        public int Weight;
 
         public Edge(Node pointA, Node pointB, int weight) {
 

@@ -63,10 +63,13 @@ namespace SearchAlgorithmVisualization
         private bool ShowWeightsText = true;
 
         // Edit, delete flags
-        private bool DeleteMode = false;
+        private bool NodeDeleteMode = false;
         private int NumberOfRecentlyDeleted = 0; // Track the number of recently deleted nodes so that the naming will not break in the GetNodeName()
 
-        private bool EditMode = false;
+        private bool NodeEditMode = false;
+
+        private bool EdgeDeleteMode = false;
+        private bool EdgeEditMode = false;
 
         public MainForm()
         {
@@ -161,8 +164,8 @@ namespace SearchAlgorithmVisualization
             return res;
         }
 
-        // Returns the node that is clicked by the mouse
-        private Node? GetClickedNode(List<Node> nodes, int mouseX, int mouseY)
+        // Returns the node that is near the mouse
+        private Node? GetNodeNearMouse(List<Node> nodes, int mouseX, int mouseY)
         {
             foreach (Node existingNode in nodes)
             {
@@ -170,6 +173,32 @@ namespace SearchAlgorithmVisualization
                 {
                     return existingNode;
                 }
+            }
+
+            return null;
+        }
+
+        // Returns the edge that is near the mouse
+        private Edge? GetEdgeNearMouse(List<Edge> edges, int mouseX, int mouseY)
+        {
+            // A pixel threshold so that the user doesn't have to accurately click the edge, just an estimation of it
+            const int THRESHOLD = 3;
+
+
+
+            foreach (Edge existingEdge in edges)
+            {
+                var (x1, y1) = (existingEdge.PointA.X, existingEdge.PointA.Y);
+                var (x2, y2) = (existingEdge.PointB.X, existingEdge.PointB.Y);
+
+                double n = Math.Abs((x2 - x1) * (y1 - mouseY) - (x1 - mouseX) * (y2 - y1));
+                double d = Helpers.Helpers.dist(x1, y1, x2, y2);
+
+                double perpendicularDistance = n / d;
+
+                if (perpendicularDistance > THRESHOLD) continue;
+
+                return existingEdge;
             }
 
             return null;
@@ -320,12 +349,12 @@ namespace SearchAlgorithmVisualization
                 // For start node selection
                 if (this.SearchingStartNode == null)
                 {
-                    this.SearchingStartNode = this.GetClickedNode(this.nodes, mouseX, mouseY);
+                    this.SearchingStartNode = this.GetNodeNearMouse(this.nodes, mouseX, mouseY);
                     this.RenderNode(this.SearchingStartNode, Brushes.Blue);
                 }
                 else if (this.HasTargetNodeCheckBox.Checked && this.SearchingEndNode == null)
                 {
-                    this.SearchingEndNode = this.GetClickedNode(this.nodes, mouseX, mouseY);
+                    this.SearchingEndNode = this.GetNodeNearMouse(this.nodes, mouseX, mouseY);
                     this.RenderNode(this.SearchingEndNode, Brushes.Yellow);
                 }
 
@@ -335,10 +364,10 @@ namespace SearchAlgorithmVisualization
                 return;
             }
 
-            // For Deleting
-            else if (this.DeleteMode)
+            // For Node Deleting
+            else if (this.NodeDeleteMode)
             {
-                Node? n = this.GetClickedNode(this.nodes, mouseX, mouseY);
+                Node? n = this.GetNodeNearMouse(this.nodes, mouseX, mouseY);
 
                 if (n == null) return;
 
@@ -353,12 +382,12 @@ namespace SearchAlgorithmVisualization
                 this.DrawingPanel.Invalidate();
 
                 return;
-            } 
-            
-            // For Editing
-            else if (this.EditMode)
+            }
+
+            // For Node Editing
+            else if (this.NodeEditMode)
             {
-                Node? n = this.GetClickedNode(this.nodes, mouseX, mouseY);
+                Node? n = this.GetNodeNearMouse(this.nodes, mouseX, mouseY);
 
                 if (n == null) return;
 
@@ -383,6 +412,51 @@ namespace SearchAlgorithmVisualization
 
                 return;
             }
+
+            // For Edge Editing
+            else if (this.EdgeEditMode)
+            {
+                Edge? selected = this.GetEdgeNearMouse(this.edges, mouseX, mouseY);
+
+                if (selected == null) return;
+
+                int? weight = null;
+
+                this.WeightPromptForm.Show();
+
+                while (!this.PromptSuccess)
+                {
+                    if (this.PromptCancelled) return;
+
+                    await Task.Delay(100);
+                }
+
+                weight = this.WeightPromptForm.GetInput();
+
+                selected.Weight = weight ?? 1;
+
+                // Refresh drawing panel to view changes
+                this.DrawingPanel.Invalidate();
+
+                return;
+            }
+
+            // For Edge Deleting
+            else if (this.EdgeDeleteMode)
+            {
+                Edge? selected = this.GetEdgeNearMouse(this.edges, mouseX, mouseY);
+
+                if (selected == null) return;
+
+                // Find the node in the list and remove it
+                this.edges.Remove(selected);
+
+                // Refresh drawing panel to view changes
+                this.DrawingPanel.Invalidate();
+
+                return;
+            }
+
 
             // Draw a node or edge based on selected creation mode
 
@@ -437,7 +511,7 @@ namespace SearchAlgorithmVisualization
                 // If there are less than 2 nodes, don't do anything
                 if (this.nodes.Count < 2) return;
 
-                Node? selectedNode = this.GetClickedNode(this.nodes, mouseX, mouseY);
+                Node? selectedNode = this.GetNodeNearMouse(this.nodes, mouseX, mouseY);
 
                 if (this.edgePointA == null)
                 {
@@ -548,7 +622,7 @@ namespace SearchAlgorithmVisualization
             if (!this.NodeModeRadioButton.Checked) return;
 
             // Reset edit or delete mode
-            this.DeleteMode = this.EditMode = false;
+            this.NodeDeleteMode = this.NodeEditMode = this.EdgeDeleteMode = this.EdgeEditMode = false;
 
             // Reset the setting of edge points
             if (this.edgePointA != null)
@@ -568,7 +642,7 @@ namespace SearchAlgorithmVisualization
             if (!this.EdgeModeRadioButton.Checked) return;
 
             // Reset edit or delete mode
-            this.DeleteMode = this.EditMode = false;
+            this.NodeDeleteMode = this.NodeEditMode = this.EdgeDeleteMode = this.EdgeEditMode = false;
         }
 
         // This will clear all nodes and edges in the graph
@@ -624,6 +698,8 @@ namespace SearchAlgorithmVisualization
 
             this.NodeDeleteButton.Enabled = false;
             this.NodeEditButton.Enabled = false;
+            this.EdgeDeleteButton.Enabled = false;
+            this.EdgeEditButton.Enabled = false;
 
             this.ResetButton.Text = "Cancel";
         }
@@ -641,6 +717,8 @@ namespace SearchAlgorithmVisualization
 
             this.NodeDeleteButton.Enabled = true;
             this.NodeEditButton.Enabled = true;
+            this.EdgeDeleteButton.Enabled = true;
+            this.EdgeEditButton.Enabled = true;
 
             this.ResetButton.Text = "Reset";
         }
@@ -1181,17 +1259,35 @@ namespace SearchAlgorithmVisualization
         private Node? GetHoveredNode(List<Node> nodes, int mouseX, int mouseY)
         {
             // Essentially gets the node at current mouseX and mouseY
-            Node? hovered = GetClickedNode(nodes, mouseX, mouseY);
+            Node? hovered = this.GetNodeNearMouse(nodes, mouseX, mouseY);
 
             return hovered;
         }
 
-        // Function to change the cursor when a node is hovered
-        private void CursorHandWhenNodeHovered()
+        // Function to get the hovered edge
+        private Edge? GetHoveredEdge(List<Edge> edges, int mouseX, int mouseY)
+        {
+            // Essentially gets the edge that the mouse touched
+            // In the case where the mouse clicks at a location at the cross-section of two edges,
+            //   the more recently created edge from the two will be taken
+
+            Edge? hovered = this.GetEdgeNearMouse(edges, mouseX, mouseY);
+
+            return hovered;
+        }
+
+        // Function to change the cursor when a node or edge is hovered
+        private void CursorHandWhenNodeOrEdgeHovered()
         {
             // Only implement if the creation mode is edge mode
             // Only implement if the program is waiting for a starting or ending search node
-            if (!this.EdgeModeRadioButton.Checked && !this.InitializeSimulation && !this.DeleteMode && !this.EditMode)
+            if (!this.InitializeSimulation &&
+                !this.EdgeModeRadioButton.Checked &&
+                !this.NodeDeleteMode &&
+                !this.NodeEditMode &&
+                !this.EdgeDeleteMode &&
+                !this.EdgeEditMode
+               )
             {
                 // Change cursor to default
                 // Debounce to prevent too much calls
@@ -1205,9 +1301,19 @@ namespace SearchAlgorithmVisualization
 
             // Traverse and check if there is a node hovered
             // Debounce it to prevent costly linear seach
-            Node? hovered = this.MouseHoverDebouncer.Debounce(() => this.GetHoveredNode(this.nodes, mousePosition.X, mousePosition.Y), 5);
+            Node? hoveredNode = null;
+            Edge? hoveredEdge = null;
 
-            if (hovered != null)
+            if (this.EdgeDeleteMode || this.EdgeEditMode)
+            {
+                hoveredEdge = this.MouseHoverDebouncer.Debounce(() => this.GetHoveredEdge(this.edges, mousePosition.X, mousePosition.Y), 5);
+            }
+            else
+            {
+                hoveredNode = this.MouseHoverDebouncer.Debounce(() => this.GetHoveredNode(this.nodes, mousePosition.X, mousePosition.Y), 5);
+            }
+
+            if (hoveredNode != null || hoveredEdge != null)
             {
                 this.Cursor = Cursors.Hand;
             }
@@ -1217,15 +1323,15 @@ namespace SearchAlgorithmVisualization
             }
         }
 
-        // Used for checking if hovered on a node
+        // Used for checking if hovered on a node or edge
         private void DrawingPanel_MouseHover(object sender, EventArgs e)
         {
-            this.CursorHandWhenNodeHovered();
+            this.CursorHandWhenNodeOrEdgeHovered();
         }
 
         private void DrawingPanel_MouseMove(object sender, MouseEventArgs e)
         {
-            this.CursorHandWhenNodeHovered();
+            this.CursorHandWhenNodeOrEdgeHovered();
         }
 
         private void DrawingPanel_MouseLeave(object sender, EventArgs e)
@@ -1307,6 +1413,9 @@ namespace SearchAlgorithmVisualization
                     this.CustomHCostCheckBox.Checked = false;
                     this.CustomGCostCheckBox.Checked = false;
 
+                    this.NodeEditButton.Enabled = false;
+                    this.EdgeEditButton.Enabled = false;
+
                     this.ShowWeightsText = false;
                     this.ShowHeuristicsText = false;
 
@@ -1320,6 +1429,8 @@ namespace SearchAlgorithmVisualization
                     this.HasTargetNodeCheckBox.Enabled = false;
                     this.HasTargetNodeCheckBox.Checked = true;
 
+                    this.EdgeEditButton.Enabled = false;
+
                     this.ShowWeightsText = false;
                     this.ShowHeuristicsText = true;
 
@@ -1332,6 +1443,8 @@ namespace SearchAlgorithmVisualization
                     this.CustomHCostCheckBox.Checked = false;
                     this.HasTargetNodeCheckBox.Enabled = true;
                     this.HasTargetNodeCheckBox.Checked = true;
+
+                    this.NodeEditButton.Enabled = false;
 
                     this.ShowWeightsText = true;
                     this.ShowHeuristicsText = false;
@@ -1367,6 +1480,9 @@ namespace SearchAlgorithmVisualization
             this.HasTargetNodeCheckBox.Enabled = true;
             this.CustomHCostCheckBox.Enabled = true;
             this.CustomGCostCheckBox.Enabled = true;
+
+            this.NodeEditButton.Enabled = true;
+            this.EdgeEditButton.Enabled = true;
 
             this.HasTargetNodeCheckBox.Checked = false;
         }
@@ -1404,12 +1520,12 @@ namespace SearchAlgorithmVisualization
         // Sets deletion mode and waits for user to click a node to be deleted
         private void NodeDeleteButton_Click(object sender, EventArgs e)
         {
-            if (this.DeleteMode) return;
+            if (this.NodeDeleteMode) return;
 
-            // Set delete flag and unset edit flag if active
-            if (this.EditMode) this.EditMode = false;
+            // Set delete flag and unset all other flags if active
+            this.NodeEditMode = this.EdgeEditMode = this.EdgeDeleteMode = false;
 
-            this.DeleteMode = true;
+            this.NodeDeleteMode = true;
 
             // Reset checked state for the radio buttons as they will be the one to cancel the deletion
             this.NodeModeRadioButton.Checked = this.EdgeModeRadioButton.Checked = false;
@@ -1417,12 +1533,38 @@ namespace SearchAlgorithmVisualization
 
         private void NodeEditButton_Click(object sender, EventArgs e)
         {
-            if (this.EditMode) return;
+            if (this.NodeEditMode) return;
 
-            // Set edit flag and unset delete flag if active
-            if (this.DeleteMode) this.DeleteMode = false;
+            // Set delete flag and unset all other flags if active
+            this.NodeDeleteMode = this.EdgeEditMode = this.EdgeDeleteMode = false;
 
-            this.EditMode = true;
+            this.NodeEditMode = true;
+
+            // Reset checked state for the radio buttons as they will be the one to cancel the deletion
+            this.NodeModeRadioButton.Checked = this.EdgeModeRadioButton.Checked = false;
+        }
+
+        private void EdgeEditButton_Click(object sender, EventArgs e)
+        {
+            if (this.EdgeEditMode) return;
+
+            // Set delete flag and unset all other flags if active
+            this.NodeDeleteMode = this.NodeEditMode = this.EdgeDeleteMode = false;
+
+            this.EdgeEditMode = true;
+
+            // Reset checked state for the radio buttons as they will be the one to cancel the deletion
+            this.NodeModeRadioButton.Checked = this.EdgeModeRadioButton.Checked = false;
+        }
+
+        private void EdgeDeleteButton_Click(object sender, EventArgs e)
+        {
+            if (this.EdgeDeleteMode) return;
+
+            // Set delete flag and unset all other flags if active
+            this.NodeDeleteMode = this.NodeEditMode = this.EdgeEditMode = false;
+
+            this.EdgeDeleteMode = true;
 
             // Reset checked state for the radio buttons as they will be the one to cancel the deletion
             this.NodeModeRadioButton.Checked = this.EdgeModeRadioButton.Checked = false;
