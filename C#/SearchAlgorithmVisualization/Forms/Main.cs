@@ -580,6 +580,8 @@ namespace SearchAlgorithmVisualization
             this.edges.Clear();
             this.edges.Capacity = 10;
 
+            this.NumberOfRecentlyDeleted = 0;
+
             this.DrawingPanel.Invalidate();
         }
 
@@ -593,6 +595,10 @@ namespace SearchAlgorithmVisualization
             this.HasTargetNodeCheckBox.Enabled = false;
             this.CustomHCostCheckBox.Enabled = false;
             this.CustomGCostCheckBox.Enabled = false;
+
+            this.NodeDeleteButton.Enabled = false;
+            this.NodeEditButton.Enabled = false;
+            
             this.ResetButton.Text = "Cancel";
         }
 
@@ -606,6 +612,10 @@ namespace SearchAlgorithmVisualization
             this.HasTargetNodeCheckBox.Enabled = true;
             this.CustomHCostCheckBox.Enabled = false;
             this.CustomGCostCheckBox.Enabled = false;
+
+            this.NodeDeleteButton.Enabled = true;
+            this.NodeEditButton.Enabled = true;
+
             this.ResetButton.Text = "Reset";
         }
 
