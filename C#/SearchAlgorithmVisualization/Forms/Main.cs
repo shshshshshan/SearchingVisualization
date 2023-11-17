@@ -49,12 +49,6 @@ namespace SearchAlgorithmVisualization
         private bool LogsOpened = false;
         private Logs LogsForm = new Logs();
 
-        // Constant logs location
-        // Somewhere not obstructing graph view
-        // Magic number
-        private const int LOGS_FORM_X = 849;
-        private const int LOGS_FORM_Y = 402;
-
         // Utility prompt forms
         private CustomWeightPrompt WeightPromptForm = new CustomWeightPrompt();
         private CustomHeuristicsPrompt HeuristicsPromptForm = new CustomHeuristicsPrompt();
@@ -71,6 +65,8 @@ namespace SearchAlgorithmVisualization
         // Edit, delete flags
         private bool DeleteMode = false;
         private int NumberOfRecentlyDeleted = 0; // Track the number of recently deleted nodes so that the naming will not break in the GetNodeName()
+
+        private bool EditMode = false;
 
         public MainForm()
         {
@@ -313,6 +309,10 @@ namespace SearchAlgorithmVisualization
             int mouseX = e.X;
             int mouseY = e.Y;
 
+            // Reset prompt flags
+            this.PromptCancelled = false;
+            this.PromptSuccess = false;
+
             // For selecting a starting node
             // This is when "run" button is clicked
             if (this.InitializeSimulation)
@@ -353,12 +353,38 @@ namespace SearchAlgorithmVisualization
                 this.DrawingPanel.Invalidate();
 
                 return;
+            } 
+            
+            // For Editing
+            else if (this.EditMode)
+            {
+                Node? n = this.GetClickedNode(this.nodes, mouseX, mouseY);
+
+                if (n == null) return;
+
+                float? heuristics = null;
+
+                this.HeuristicsPromptForm.Show();
+
+                while (!this.PromptSuccess)
+                {
+                    if (this.PromptCancelled) return;
+
+                    await Task.Delay(100);
+                }
+
+                heuristics = this.HeuristicsPromptForm.GetInput();
+
+                n.Heuristics = heuristics ?? -1;
+                n.IsDefaultHeuristicValue = !heuristics.HasValue;
+
+                // Refresh drawing panel to view changes
+                this.DrawingPanel.Invalidate();
+
+                return;
             }
 
             // Draw a node or edge based on selected creation mode
-            // Reset prompt flags
-            this.PromptCancelled = false;
-            this.PromptSuccess = false;
 
             // Node creation
             if (this.NodeModeRadioButton.Checked)
@@ -522,7 +548,7 @@ namespace SearchAlgorithmVisualization
             if (!this.NodeModeRadioButton.Checked) return;
 
             // Reset edit or delete mode
-            this.DeleteMode = false;
+            this.DeleteMode = this.EditMode = false;
 
             // Reset the setting of edge points
             if (this.edgePointA != null)
@@ -542,7 +568,7 @@ namespace SearchAlgorithmVisualization
             if (!this.EdgeModeRadioButton.Checked) return;
 
             // Reset edit or delete mode
-            this.DeleteMode = false;
+            this.DeleteMode = this.EditMode = false;
         }
 
         // This will clear all nodes and edges in the graph
@@ -598,7 +624,7 @@ namespace SearchAlgorithmVisualization
 
             this.NodeDeleteButton.Enabled = false;
             this.NodeEditButton.Enabled = false;
-            
+
             this.ResetButton.Text = "Cancel";
         }
 
@@ -1165,7 +1191,7 @@ namespace SearchAlgorithmVisualization
         {
             // Only implement if the creation mode is edge mode
             // Only implement if the program is waiting for a starting or ending search node
-            if (!this.EdgeModeRadioButton.Checked && !this.InitializeSimulation && !this.DeleteMode)
+            if (!this.EdgeModeRadioButton.Checked && !this.InitializeSimulation && !this.DeleteMode && !this.EditMode)
             {
                 // Change cursor to default
                 // Debounce to prevent too much calls
@@ -1380,8 +1406,23 @@ namespace SearchAlgorithmVisualization
         {
             if (this.DeleteMode) return;
 
-            // Set delete flag
+            // Set delete flag and unset edit flag if active
+            if (this.EditMode) this.EditMode = false;
+
             this.DeleteMode = true;
+
+            // Reset checked state for the radio buttons as they will be the one to cancel the deletion
+            this.NodeModeRadioButton.Checked = this.EdgeModeRadioButton.Checked = false;
+        }
+
+        private void NodeEditButton_Click(object sender, EventArgs e)
+        {
+            if (this.EditMode) return;
+
+            // Set edit flag and unset delete flag if active
+            if (this.DeleteMode) this.DeleteMode = false;
+
+            this.EditMode = true;
 
             // Reset checked state for the radio buttons as they will be the one to cancel the deletion
             this.NodeModeRadioButton.Checked = this.EdgeModeRadioButton.Checked = false;

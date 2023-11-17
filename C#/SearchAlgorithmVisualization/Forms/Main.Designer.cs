@@ -279,11 +279,13 @@
             // NodeEditButton
             // 
             NodeEditButton.Cursor = Cursors.Hand;
+            NodeEditButton.Image = Properties.Resources.edit_icon16;
             NodeEditButton.Location = new Point(36, 46);
             NodeEditButton.Name = "NodeEditButton";
             NodeEditButton.Size = new Size(26, 23);
             NodeEditButton.TabIndex = 6;
             NodeEditButton.UseVisualStyleBackColor = true;
+            NodeEditButton.Click += NodeEditButton_Click;
             // 
             // NodeDeleteButton
             // 

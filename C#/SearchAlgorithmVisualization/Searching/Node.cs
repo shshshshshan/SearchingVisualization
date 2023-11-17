@@ -38,7 +38,7 @@ namespace SearchAlgorithmVisualization.Searching
         // Determines if the user initially set the heuristic value or not
         // Used to manually calculate heuristics by the algorithm
         // This is so that user-set heuristics won't get overridden
-        public bool IsDefaultHeuristicValue { get; private set; }
+        public bool IsDefaultHeuristicValue;
 
         public Node(string label, int x, int y, int radius, float? heuristics) {
 
