@@ -3,6 +3,7 @@ using SearchAlgorithmVisualization.Helpers;
 using SearchAlgorithmVisualization.Properties;
 using SearchAlgorithmVisualization.Searching;
 using System.Diagnostics;
+using System.Net.Security;
 using System.Runtime.CompilerServices;
 
 namespace SearchAlgorithmVisualization
@@ -205,15 +206,20 @@ namespace SearchAlgorithmVisualization
         }
 
         // Utility function to render a single node
-        private void RenderNode(Node? n, Brush? b = null)
+        private void RenderNode(Node? n, Brush? b = null, Pen? p = null)
         {
             // Catch invalid parameters
             if (n == null) return;
 
-            if (b == null) { b = Brushes.Red; }
+            const int BORDER_WIDTH = 2;
 
-            // Draw the node as a circle
+            if (b == null) { b = Brushes.Red; }
+            if (p == null) { p = new Pen(Brushes.Black, BORDER_WIDTH); }
+
+            // Draw the node as a circle with borders
+
             this.g.FillEllipse(b, n.X - n.Radius, n.Y - n.Radius, n.Diameter, n.Diameter);
+            this.g.DrawEllipse(p, n.X - n.Radius - BORDER_WIDTH / 2, n.Y - n.Radius - BORDER_WIDTH / 2, n.Diameter + BORDER_WIDTH, n.Diameter + BORDER_WIDTH);
 
             // Calculate text size and position for the label
             Font labelFont = new Font("Arial", n.Diameter * 0.4F, FontStyle.Bold);
@@ -222,7 +228,7 @@ namespace SearchAlgorithmVisualization
             float labelX = n.X - textSize.Width / 2;
             float labelY = n.Y - textSize.Height / 2;
 
-            this.g.DrawString(n.Label, labelFont, Brushes.Black, labelX, labelY);
+            this.g.DrawString(n.Label, labelFont, Brushes.WhiteSmoke, labelX, labelY);
 
             // Draw the heuristic value as text above the node
 
@@ -1228,6 +1234,9 @@ namespace SearchAlgorithmVisualization
 
                 // ['pathElements']
                 this.LogsForm.RenderCurrentPathNodes((List<string>)iterDict["pathElements"]);
+
+                // Highlight traversable nodes from current
+                this.HighlightTraversableNodes((List<string>?)iterDict["paths"]);
             }
 
 
@@ -1246,6 +1255,22 @@ namespace SearchAlgorithmVisualization
 
             // Update simulation navigation status per iteration
             this.UpdateSimulationNavigationButtonsAvailability();
+        }
+
+        // Highlight the nodes that are available from the current node
+        // This is used in animation
+        private void HighlightTraversableNodes(List<string>? nodes)
+        {
+            if (nodes == null) return;
+
+            foreach (string s in nodes)
+            {
+                Node? n = this.nodes.Find(n => n.Label == s);
+
+                if (n == null) continue;
+
+                this.RenderNode(n, Brushes.DarkOrange);
+            }
         }
 
         // Drawing stuff over the control panel
