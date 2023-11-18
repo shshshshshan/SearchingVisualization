@@ -244,13 +244,13 @@ namespace SearchAlgorithmVisualization
         // Utility function to render a single edge
         // This function re-renders the source and destination nodes as well to
         //   fix the colors and make the edge appear behind the nodes
-        private void RenderEdge(Edge e, float? w = null, Pen? p = null)
+        private void RenderEdge(Edge e, float? w = null, Brush? b = null)
         {
             // Catch invalid parameters
             if (e == null) return;
 
-            float width = w ?? 2;
-            Pen pen = p ?? new Pen(Brushes.Black, width);
+            float width = w ?? 3;
+            Pen pen = new Pen(b ?? Brushes.Black, width);
 
             // Draw the edge connection as lines
             // Draw first to make it appear behind
@@ -578,8 +578,8 @@ namespace SearchAlgorithmVisualization
 
                     // Clear the existing edge points for the next input
                     this.edgePointA = this.edgePointB = null;
-                } 
-                
+                }
+
                 // For when user pressed outside of the prompt window
                 // When Edge point B != null, Edge point A also not null
                 else if (this.CustomGCostCheckBox.Checked && this.edgePointB != null)
@@ -1247,6 +1247,9 @@ namespace SearchAlgorithmVisualization
 
                 // Highlight traversable nodes from current
                 this.HighlightTraversableNodes((List<string>?)iterDict["paths"]);
+
+                // Highlight the edge of path traversed
+                this.HighlightTraversedPath((List<string>)iterDict["pathElements"]);
             }
 
 
@@ -1290,6 +1293,30 @@ namespace SearchAlgorithmVisualization
                 if (n == null) continue;
 
                 this.RenderNode(n, b);
+            }
+        }
+
+        // Highlight the edges that a path traversed
+        // This is used in animation
+        private void HighlightTraversedPath(List<string>? nodes, Brush? b = null)
+        {
+            if (nodes == null || nodes.Count < 2) return;
+
+            if (b == null) { b = Brushes.BlueViolet; }
+
+            foreach (Edge e in this.edges)
+            {
+                // Render defaults to reset
+                this.RenderEdge(e);
+            }
+
+            for (int i = 0; i + 1 < nodes.Count; i++)
+            {
+                Edge? e = this.edges.Find(e => e.HasMember(nodes[i]) && e.HasMember(nodes[i + 1]));
+
+                if (e == null) continue;
+
+                this.RenderEdge(e, b: Brushes.BlueViolet);
             }
         }
 

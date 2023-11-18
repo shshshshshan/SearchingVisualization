@@ -45,6 +45,8 @@
             CreationSectionLabel = new Label();
             ControlPanelMainLabel = new Label();
             CreationModePanel = new Panel();
+            EdgeEditButton = new Button();
+            EdgeDeleteButton = new Button();
             NodeEditButton = new Button();
             NodeDeleteButton = new Button();
             EdgeModeRadioButton = new RadioButton();
@@ -64,8 +66,6 @@
             SimulationContolsLabel = new Label();
             DrawingPanel = new Panel();
             AnimationClock = new System.Windows.Forms.Timer(components);
-            EdgeEditButton = new Button();
-            EdgeDeleteButton = new Button();
             ControlPanel.SuspendLayout();
             LogsPanel.SuspendLayout();
             HasTargetNodePanel.SuspendLayout();
@@ -279,6 +279,28 @@
             CreationModePanel.Name = "CreationModePanel";
             CreationModePanel.Size = new Size(220, 120);
             CreationModePanel.TabIndex = 6;
+            // 
+            // EdgeEditButton
+            // 
+            EdgeEditButton.Cursor = Cursors.Hand;
+            EdgeEditButton.Image = Properties.Resources.edit_icon16;
+            EdgeEditButton.Location = new Point(36, 79);
+            EdgeEditButton.Name = "EdgeEditButton";
+            EdgeEditButton.Size = new Size(26, 23);
+            EdgeEditButton.TabIndex = 8;
+            EdgeEditButton.UseVisualStyleBackColor = true;
+            EdgeEditButton.Click += EdgeEditButton_Click;
+            // 
+            // EdgeDeleteButton
+            // 
+            EdgeDeleteButton.Cursor = Cursors.Hand;
+            EdgeDeleteButton.Image = Properties.Resources.trash_icon16;
+            EdgeDeleteButton.Location = new Point(68, 79);
+            EdgeDeleteButton.Name = "EdgeDeleteButton";
+            EdgeDeleteButton.Size = new Size(26, 23);
+            EdgeDeleteButton.TabIndex = 7;
+            EdgeDeleteButton.UseVisualStyleBackColor = true;
+            EdgeDeleteButton.Click += EdgeDeleteButton_Click;
             // 
             // NodeEditButton
             // 
@@ -514,28 +536,6 @@
             AnimationClock.Interval = 1000;
             AnimationClock.Tick += AnimationClock_Tick;
             // 
-            // EdgeEditButton
-            // 
-            EdgeEditButton.Cursor = Cursors.Hand;
-            EdgeEditButton.Image = Properties.Resources.edit_icon16;
-            EdgeEditButton.Location = new Point(36, 79);
-            EdgeEditButton.Name = "EdgeEditButton";
-            EdgeEditButton.Size = new Size(26, 23);
-            EdgeEditButton.TabIndex = 8;
-            EdgeEditButton.UseVisualStyleBackColor = true;
-            EdgeEditButton.Click += EdgeEditButton_Click;
-            // 
-            // EdgeDeleteButton
-            // 
-            EdgeDeleteButton.Cursor = Cursors.Hand;
-            EdgeDeleteButton.Image = Properties.Resources.trash_icon16;
-            EdgeDeleteButton.Location = new Point(68, 79);
-            EdgeDeleteButton.Name = "EdgeDeleteButton";
-            EdgeDeleteButton.Size = new Size(26, 23);
-            EdgeDeleteButton.TabIndex = 7;
-            EdgeDeleteButton.UseVisualStyleBackColor = true;
-            EdgeDeleteButton.Click += EdgeDeleteButton_Click;
-            // 
             // MainForm
             // 
             AutoScaleDimensions = new SizeF(7F, 15F);
@@ -546,6 +546,7 @@
             FormBorderStyle = FormBorderStyle.FixedSingle;
             MaximizeBox = false;
             Name = "MainForm";
+            RightToLeft = RightToLeft.No;
             StartPosition = FormStartPosition.CenterScreen;
             Text = "Activity 5 - Searching Algorithms";
             ControlPanel.ResumeLayout(false);
