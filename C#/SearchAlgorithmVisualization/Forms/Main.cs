@@ -244,7 +244,7 @@ namespace SearchAlgorithmVisualization
         // Utility function to render a single edge
         // This function re-renders the source and destination nodes as well to
         //   fix the colors and make the edge appear behind the nodes
-        private void RenderEdge(Edge e, float? w = null, Brush? b = null)
+        private void RenderEdge(Edge e, float? w = null, Brush? b = null, bool renderNode = true)
         {
             // Catch invalid parameters
             if (e == null) return;
@@ -257,8 +257,11 @@ namespace SearchAlgorithmVisualization
             this.g.DrawLine(pen, e.PointA.X, e.PointA.Y, e.PointB.X, e.PointB.Y);
 
             // Re-draw source and destination to reset it to default
-            this.RenderNode(e.PointA);
-            this.RenderNode(e.PointB);
+            if (renderNode)
+            {
+                this.RenderNode(e.PointA);
+                this.RenderNode(e.PointB);
+            }
 
             if (this.ShowWeightsText)
             {
@@ -1307,7 +1310,7 @@ namespace SearchAlgorithmVisualization
             foreach (Edge e in this.edges)
             {
                 // Render defaults to reset
-                this.RenderEdge(e);
+                this.RenderEdge(e, renderNode: false);
             }
 
             for (int i = 0; i + 1 < nodes.Count; i++)
@@ -1316,7 +1319,7 @@ namespace SearchAlgorithmVisualization
 
                 if (e == null) continue;
 
-                this.RenderEdge(e, b: Brushes.BlueViolet);
+                this.RenderEdge(e, b: Brushes.DarkViolet, renderNode: false);
             }
         }
 
