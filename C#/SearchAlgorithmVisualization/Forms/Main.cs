@@ -183,9 +183,7 @@ namespace SearchAlgorithmVisualization
         private Edge? GetEdgeNearMouse(List<Edge> edges, int mouseX, int mouseY)
         {
             // A pixel threshold so that the user doesn't have to accurately click the edge, just an estimation of it
-            const int THRESHOLD = 3;
-
-
+            const int THRESHOLD = 5;
 
             foreach (Edge existingEdge in edges)
             {
@@ -213,13 +211,13 @@ namespace SearchAlgorithmVisualization
 
             const int BORDER_WIDTH = 2;
 
-            if (b == null) { b = Brushes.Red; }
-            if (p == null) { p = new Pen(Brushes.Black, BORDER_WIDTH); }
+            Brush brush = b ?? Brushes.Red;
+            Pen pen = p ?? new Pen(Brushes.Black, BORDER_WIDTH);
 
             // Draw the node as a circle with borders
 
-            this.g.FillEllipse(b, n.X - n.Radius, n.Y - n.Radius, n.Diameter, n.Diameter);
-            this.g.DrawEllipse(p, n.X - n.Radius - BORDER_WIDTH / 2, n.Y - n.Radius - BORDER_WIDTH / 2, n.Diameter + BORDER_WIDTH, n.Diameter + BORDER_WIDTH);
+            this.g.FillEllipse(brush, n.X - n.Radius, n.Y - n.Radius, n.Diameter, n.Diameter);
+            this.g.DrawEllipse(pen, n.X - n.Radius - BORDER_WIDTH / 2, n.Y - n.Radius - BORDER_WIDTH / 2, n.Diameter + BORDER_WIDTH, n.Diameter + BORDER_WIDTH);
 
             // Calculate text size and position for the label
             Font labelFont = new Font("Arial", n.Diameter * 0.4F, FontStyle.Bold);
@@ -251,11 +249,12 @@ namespace SearchAlgorithmVisualization
             // Catch invalid parameters
             if (e == null) return;
 
-            if (p == null) { p = new Pen(Brushes.Black, 2); }
+            float width = w ?? 2;
+            Pen pen = p ?? new Pen(Brushes.Black, width);
 
             // Draw the edge connection as lines
             // Draw first to make it appear behind
-            this.g.DrawLine(p, e.PointA.X, e.PointA.Y, e.PointB.X, e.PointB.Y);
+            this.g.DrawLine(pen, e.PointA.X, e.PointA.Y, e.PointB.X, e.PointB.Y);
 
             // Re-draw source and destination to reset it to default
             this.RenderNode(e.PointA);
@@ -297,6 +296,7 @@ namespace SearchAlgorithmVisualization
         }
 
         // Utility function to render the simulation status
+        // White => Solving (the simulation status won't render if the algorithm is not done)
         // Navy => Waiting for a starting node
         // Light Yellow => Waiting for a destination mode (if set)
         // Red => Simulation is on-going
@@ -320,7 +320,7 @@ namespace SearchAlgorithmVisualization
                 }
                 else if (this.HasTargetNodeCheckBox.Checked && this.SearchingEndNode == null)
                 {
-                    statusBrush = Brushes.LightYellow;
+                    statusBrush = Brushes.Yellow;
                 }
             }
             else if (this.SimulationPaused)
@@ -578,6 +578,16 @@ namespace SearchAlgorithmVisualization
 
                     // Clear the existing edge points for the next input
                     this.edgePointA = this.edgePointB = null;
+                } 
+                
+                // For when user pressed outside of the prompt window
+                // When Edge point B != null, Edge point A also not null
+                else if (this.CustomGCostCheckBox.Checked && this.edgePointB != null)
+                {
+                    this.PromptCancelled = true;
+                    this.RenderNode(this.edgePointA);
+                    this.edgePointA = this.edgePointB = null;
+                    return;
                 }
             }
         }
@@ -1259,9 +1269,19 @@ namespace SearchAlgorithmVisualization
 
         // Highlight the nodes that are available from the current node
         // This is used in animation
-        private void HighlightTraversableNodes(List<string>? nodes)
+        private void HighlightTraversableNodes(List<string>? nodes, Brush? b = null)
         {
             if (nodes == null) return;
+
+            if (b == null) { b = Brushes.DarkOrange; }
+
+            // Render default for non-neighbor nodes
+            // Dark-orange for neighbor nodes
+            foreach (Node n in this.nodes)
+            {
+                // Render defaults to reset it
+                this.RenderNode(n);
+            }
 
             foreach (string s in nodes)
             {
@@ -1269,7 +1289,7 @@ namespace SearchAlgorithmVisualization
 
                 if (n == null) continue;
 
-                this.RenderNode(n, Brushes.DarkOrange);
+                this.RenderNode(n, b);
             }
         }
 
