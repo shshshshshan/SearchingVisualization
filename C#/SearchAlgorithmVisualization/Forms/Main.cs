@@ -37,6 +37,7 @@ namespace SearchAlgorithmVisualization
         // Animation variables
         private Node? SearchingStartNode = null;
         private Node? SearchingEndNode = null;
+        private Node? SearchingCurrentNode = null;
 
         private int traversedNodeIndex = 0;
         private List<Node>? SearchPath;
@@ -1174,6 +1175,8 @@ namespace SearchAlgorithmVisualization
 
             // Animate :>
 
+            this.SearchingCurrentNode = this.SearchPath[searchIndex];
+
             // Render the defaults for the previous node
             // Don't render defaults for the starting and ending search node
             if (searchIndex > 0)
@@ -1226,7 +1229,7 @@ namespace SearchAlgorithmVisualization
             }
 
             // Render the logs
-            this.LogsForm.RenderCurrentNode(this.SearchPath?[searchIndex].Label ?? "?");
+            this.LogsForm.RenderCurrentNode(this.SearchingCurrentNode.Label ?? "?");
 
             if (this.LogHashmap != null && this.LogHashmap.ContainsKey(searchIndex.ToString()))
             {
@@ -1248,16 +1251,19 @@ namespace SearchAlgorithmVisualization
                 // ['pathElements']
                 this.LogsForm.RenderCurrentPathNodes((List<string>)iterDict["pathElements"]);
 
+                // Highlight the edge of path traversed
+                // Highlight path first
+                this.HighlightTraversedPath((List<string>)iterDict["pathElements"]);
+
                 // Highlight traversable nodes from current
                 this.HighlightTraversableNodes((List<string>?)iterDict["paths"]);
-
-                // Highlight the edge of path traversed
-                this.HighlightTraversedPath((List<string>)iterDict["pathElements"]);
             }
 
 
             // Render the current node with a different colored brush
-            this.RenderNode(this.SearchPath?[searchIndex], Brushes.Purple);
+            Brush currentNodeBrush = this.SearchingEndNode?.Label == this.SearchingCurrentNode.Label ? Brushes.Turquoise : 
+                this.SearchingStartNode?.Label == this.SearchingCurrentNode.Label ? Brushes.CadetBlue : Brushes.Purple;
+            this.RenderNode(this.SearchingCurrentNode, currentNodeBrush);
 
             // Update global index to local index if passed in a different different index
             // Else increment the default index
@@ -1310,7 +1316,7 @@ namespace SearchAlgorithmVisualization
             foreach (Edge e in this.edges)
             {
                 // Render defaults to reset
-                this.RenderEdge(e, renderNode: false);
+                this.RenderEdge(e);
             }
 
             for (int i = 0; i + 1 < nodes.Count; i++)
@@ -1319,7 +1325,7 @@ namespace SearchAlgorithmVisualization
 
                 if (e == null) continue;
 
-                this.RenderEdge(e, b: Brushes.DarkViolet, renderNode: false);
+                this.RenderEdge(e, b: Brushes.DarkViolet);
             }
         }
 
