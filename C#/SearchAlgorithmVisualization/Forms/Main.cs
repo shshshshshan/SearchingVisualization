@@ -84,8 +84,8 @@ namespace SearchAlgorithmVisualization
             this.RenderSimulationStatus();
 
             // Initialize main attributes
-            nodes = new List<Node>();
-            edges = new List<Edge>();
+            this.nodes = new List<Node>();
+            this.edges = new List<Edge>();
 
             // Initialize the searching algorithm dropdown default value
             this.AlgorithmDropdown.SelectedIndex = 0;
@@ -112,6 +112,19 @@ namespace SearchAlgorithmVisualization
 
             this.BeamWidthmPromptForm.CancelButtonPressed += BeamWidthmPromptForm_CancelButtonPressed;
             this.BeamWidthmPromptForm.EnterButtonPressed += BeamWidthmPromptForm_EnterButtonPressed;
+        }
+
+        // Cleanup
+        private void MainForm_FormClosing(object sender, FormClosingEventArgs e)
+        {
+            this.nodes.Clear();
+            this.edges.Clear();
+
+            this.WeightPromptForm.Dispose();
+            this.HeuristicsPromptForm.Dispose();
+            this.BeamWidthmPromptForm.Dispose();
+
+            this.g.Dispose();
         }
 
         // Prompt success is always true for all prompts when enter button is pressed since the validation is done in the prompt
@@ -596,7 +609,8 @@ namespace SearchAlgorithmVisualization
             }
         }
 
-        private void DrawingPanel_Paint(object sender, PaintEventArgs e)
+        // Rerenders all entities (nodes, edges)
+        private void RenderEntities()
         {
             // Loop through all edges and draw them
             // Drawing edges first to make it appear behind the nodes
@@ -635,6 +649,11 @@ namespace SearchAlgorithmVisualization
             {
                 this.RenderNode(this.SearchingEndNode, Brushes.Yellow);
             }
+        }
+
+        private void DrawingPanel_Paint(object sender, PaintEventArgs e)
+        {
+            this.RenderEntities();
         }
 
         private void NodeModeRadioButton_CheckedChanged(object sender, EventArgs e)
@@ -1261,7 +1280,7 @@ namespace SearchAlgorithmVisualization
 
 
             // Render the current node with a different colored brush
-            Brush currentNodeBrush = this.SearchingEndNode?.Label == this.SearchingCurrentNode.Label ? Brushes.Turquoise : 
+            Brush currentNodeBrush = this.SearchingEndNode?.Label == this.SearchingCurrentNode.Label ? Brushes.Turquoise :
                 this.SearchingStartNode?.Label == this.SearchingCurrentNode.Label ? Brushes.CadetBlue : Brushes.Purple;
             this.RenderNode(this.SearchingCurrentNode, currentNodeBrush);
 

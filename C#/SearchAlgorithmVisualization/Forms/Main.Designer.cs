@@ -549,6 +549,7 @@
             RightToLeft = RightToLeft.No;
             StartPosition = FormStartPosition.CenterScreen;
             Text = "Activity 5 - Searching Algorithms";
+            FormClosing += MainForm_FormClosing;
             ControlPanel.ResumeLayout(false);
             LogsPanel.ResumeLayout(false);
             HasTargetNodePanel.ResumeLayout(false);
