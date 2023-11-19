@@ -29,6 +29,7 @@ namespace SearchAlgorithmVisualization
 
         // Graphics object for drawing in the drawing panel
         Graphics g;
+        BufferedGraphics buffer;
 
         // Token cancellation objects for cancelling tasks
         CancellationTokenSource? cts;
@@ -79,6 +80,14 @@ namespace SearchAlgorithmVisualization
 
             // Initialize graphics drawing object
             this.g = this.DrawingPanel.CreateGraphics();
+            this.buffer = BufferedGraphicsManager.Current.Allocate(this.g, this.DrawingPanel.ClientRectangle);
+
+            // Set default settings
+            this.DoubleBuffered = true;
+            this.ResizeRedraw = false;
+
+            // Init white buffer background
+            this.buffer.Graphics.Clear(Color.White);
 
             // Render simulation status
             this.RenderSimulationStatus();
@@ -125,6 +134,7 @@ namespace SearchAlgorithmVisualization
             this.BeamWidthmPromptForm.Dispose();
 
             this.g.Dispose();
+            this.buffer.Dispose();
         }
 
         // Prompt success is always true for all prompts when enter button is pressed since the validation is done in the prompt
@@ -218,7 +228,7 @@ namespace SearchAlgorithmVisualization
         }
 
         // Utility function to render a single node
-        private void RenderNode(Node? n, Brush? b = null, Pen? p = null)
+        private void RenderNode(Node? n, Brush? b = null, Pen? p = null, bool renderBuffer = true)
         {
             // Catch invalid parameters
             if (n == null) return;
@@ -230,51 +240,57 @@ namespace SearchAlgorithmVisualization
 
             // Draw the node as a circle with borders
 
-            this.g.FillEllipse(brush, n.X - n.Radius, n.Y - n.Radius, n.Diameter, n.Diameter);
-            this.g.DrawEllipse(pen, n.X - n.Radius - BORDER_WIDTH / 2, n.Y - n.Radius - BORDER_WIDTH / 2, n.Diameter + BORDER_WIDTH, n.Diameter + BORDER_WIDTH);
+            this.buffer.Graphics.FillEllipse(brush, n.X - n.Radius, n.Y - n.Radius, n.Diameter, n.Diameter);
+            this.buffer.Graphics.DrawEllipse(pen, n.X - n.Radius - BORDER_WIDTH / 2, n.Y - n.Radius - BORDER_WIDTH / 2, n.Diameter + BORDER_WIDTH, n.Diameter + BORDER_WIDTH);
 
             // Calculate text size and position for the label
             Font labelFont = new Font("Arial", n.Diameter * 0.4F, FontStyle.Bold);
-            SizeF textSize = this.g.MeasureString(n.Label, labelFont);
+            SizeF textSize = this.buffer.Graphics.MeasureString(n.Label, labelFont);
 
             float labelX = n.X - textSize.Width / 2;
             float labelY = n.Y - textSize.Height / 2;
 
-            this.g.DrawString(n.Label, labelFont, Brushes.WhiteSmoke, labelX, labelY);
+            this.buffer.Graphics.DrawString(n.Label, labelFont, Brushes.WhiteSmoke, labelX, labelY);
 
             // Draw the heuristic value as text above the node
 
             if (this.ShowHeuristicsText)
             {
-                SizeF heuristicLabelSize = this.g.MeasureString(n.Heuristics.ToString(), labelFont);
+                SizeF heuristicLabelSize = this.buffer.Graphics.MeasureString(n.Heuristics.ToString(), labelFont);
 
                 float heuristicLabelX = n.X - heuristicLabelSize.Width / 2;
                 float heuristicLabelY = (n.Y - heuristicLabelSize.Height / 2) - (n.Radius + n.Radius / 2);
 
-                this.g.DrawString(n.Heuristics.ToString(), labelFont, Brushes.DarkViolet, heuristicLabelX, heuristicLabelY);
+                this.buffer.Graphics.DrawString(n.Heuristics.ToString(), labelFont, Brushes.DarkViolet, heuristicLabelX, heuristicLabelY);
+            }
+
+            if (renderBuffer)
+            {
+                this.buffer.Render();
             }
         }
 
         // Utility function to render a single edge
         // This function re-renders the source and destination nodes as well to
         //   fix the colors and make the edge appear behind the nodes
-        private void RenderEdge(Edge e, float? w = null, Brush? b = null, bool renderNode = true)
+        private void RenderEdge(Edge e, float? w = null, Brush? b = null, bool renderNode = true, bool renderBuffer = true)
         {
             // Catch invalid parameters
             if (e == null) return;
 
             float width = w ?? 3;
-            Pen pen = new Pen(b ?? Brushes.Black, width);
+            b ??= Brushes.Black;
+            Pen pen = new Pen(b, width);
 
             // Draw the edge connection as lines
             // Draw first to make it appear behind
-            this.g.DrawLine(pen, e.PointA.X, e.PointA.Y, e.PointB.X, e.PointB.Y);
+            this.buffer.Graphics.DrawLine(pen, e.PointA.X, e.PointA.Y, e.PointB.X, e.PointB.Y);
 
             // Re-draw source and destination to reset it to default
             if (renderNode)
             {
-                this.RenderNode(e.PointA);
-                this.RenderNode(e.PointB);
+                this.RenderNode(e.PointA, renderBuffer: renderBuffer);
+                this.RenderNode(e.PointB, renderBuffer: renderBuffer);
             }
 
             if (this.ShowWeightsText)
@@ -284,7 +300,7 @@ namespace SearchAlgorithmVisualization
 
                 // Calculate text size and position for the label
                 Font labelFont = new Font("Arial", e.PointA.Diameter * 0.4F, FontStyle.Bold);
-                SizeF textSize = g.MeasureString(e.Weight.ToString(), labelFont);
+                SizeF textSize = this.buffer.Graphics.MeasureString(e.Weight.ToString(), labelFont);
 
                 var (midX, midY) = Helpers.Helpers.midpoint(e.PointA.X, e.PointA.Y, e.PointB.X, e.PointB.Y);
 
@@ -308,7 +324,12 @@ namespace SearchAlgorithmVisualization
                 }
 
                 // Render the label
-                this.g.DrawString(e.Weight.ToString(), labelFont, Brushes.Black, labelX, labelY);
+                this.buffer.Graphics.DrawString(e.Weight.ToString(), labelFont, Brushes.Black, labelX, labelY);
+            }
+
+            if (renderBuffer)
+            {
+                this.buffer.Render();
             }
         }
 
@@ -401,8 +422,8 @@ namespace SearchAlgorithmVisualization
                 // Find the edge in the list and remove the connections that has the selected node
                 this.edges = this.edges.Where(e => !e.HasMember(n)).ToList();
 
-                // Refresh the drawing panel to show the changes
-                this.DrawingPanel.Invalidate();
+                // Rerender entities
+                this.RenderEntities();
 
                 return;
             }
@@ -430,8 +451,8 @@ namespace SearchAlgorithmVisualization
                 n.Heuristics = heuristics ?? -1;
                 n.IsDefaultHeuristicValue = !heuristics.HasValue;
 
-                // Refresh drawing panel to view changes
-                this.DrawingPanel.Invalidate();
+                // Rerender entities
+                this.RenderEntities();
 
                 return;
             }
@@ -458,8 +479,8 @@ namespace SearchAlgorithmVisualization
 
                 selected.Weight = weight ?? 1;
 
-                // Refresh drawing panel to view changes
-                this.DrawingPanel.Invalidate();
+                // Rerender entities
+                this.RenderEntities();
 
                 return;
             }
@@ -474,8 +495,8 @@ namespace SearchAlgorithmVisualization
                 // Find the node in the list and remove it
                 this.edges.Remove(selected);
 
-                // Refresh drawing panel to view changes
-                this.DrawingPanel.Invalidate();
+                // Rerender entities
+                this.RenderEntities();
 
                 return;
             }
@@ -612,11 +633,13 @@ namespace SearchAlgorithmVisualization
         // Rerenders all entities (nodes, edges)
         private void RenderEntities()
         {
+            this.buffer.Graphics.Clear(Color.White);
+
             // Loop through all edges and draw them
             // Drawing edges first to make it appear behind the nodes
             foreach (Edge connection in this.edges)
             {
-                this.RenderEdge(connection);
+                this.RenderEdge(connection, renderBuffer: false);
             }
 
             // Loop through all nodes and draw them
@@ -629,26 +652,28 @@ namespace SearchAlgorithmVisualization
                     this.traversedNodeIndex < this.SearchPath.Count &&
                     this.SearchPath[this.traversedNodeIndex] == n)
                 {
-                    this.RenderNode(n, Brushes.Purple);
+                    this.RenderNode(n, Brushes.Purple, renderBuffer: false);
                 }
 
                 // Default render
                 else
                 {
-                    this.RenderNode(n);
+                    this.RenderNode(n, renderBuffer: false);
                 }
             }
 
             // Redraw the starting search node and ending node if available
             if (this.SearchingStartNode != null)
             {
-                this.RenderNode(this.SearchingStartNode, Brushes.Blue);
+                this.RenderNode(this.SearchingStartNode, Brushes.Blue, renderBuffer: false);
             }
 
             if (this.SearchingEndNode != null)
             {
-                this.RenderNode(this.SearchingEndNode, Brushes.Yellow);
+                this.RenderNode(this.SearchingEndNode, Brushes.Yellow, renderBuffer: false);
             }
+
+            this.buffer.Render();
         }
 
         private void DrawingPanel_Paint(object sender, PaintEventArgs e)
@@ -721,7 +746,7 @@ namespace SearchAlgorithmVisualization
 
             this.NumberOfRecentlyDeleted = 0;
 
-            this.DrawingPanel.Invalidate();
+            this.RenderEntities();
         }
 
         // Disable other control panel controls when simulation is initializing
@@ -1062,8 +1087,21 @@ namespace SearchAlgorithmVisualization
             // Initially refresh the nodes rendering
             foreach (Node n in this.nodes)
             {
-                this.RenderNode(n);
+                this.RenderNode(n, renderBuffer: false);
             }
+
+            // Redraw the starting search node and ending node if available
+            if (this.SearchingStartNode != null)
+            {
+                this.RenderNode(this.SearchingStartNode, Brushes.Blue, renderBuffer: false);
+            }
+
+            if (this.SearchingEndNode != null)
+            {
+                this.RenderNode(this.SearchingEndNode, Brushes.Yellow, renderBuffer: false);
+            }
+
+            this.buffer.Render();
 
             this.AnimatePath(path);
 
@@ -1084,9 +1122,6 @@ namespace SearchAlgorithmVisualization
             // Simulation navigation reset
             this.SimulationStepBackButton.Enabled = false;
             this.SimulationStepForwardButton.Enabled = false;
-
-            // Dim the drawing panel to let user feel the difference between simulating and idle
-            this.DrawingPanel.BackColor = Color.WhiteSmoke;
 
             // Change the cancel button to stop button when animation is started
             this.ResetButton.Text = "Stop";
@@ -1184,10 +1219,10 @@ namespace SearchAlgorithmVisualization
                 this.RenderSimulationStatus();
 
                 this.cts?.Dispose();
-                this.cts = null;
+                this.cts = default;
 
                 this.animationCts?.Dispose();
-                this.animationCts = null;
+                this.animationCts = default;
 
                 return;
             }
@@ -1205,19 +1240,19 @@ namespace SearchAlgorithmVisualization
                 // Correct color for start node
                 if (recent.Label == this.SearchingStartNode?.Label)
                 {
-                    this.RenderNode(recent, Brushes.Blue);
+                    this.RenderNode(recent, Brushes.Blue, renderBuffer: false);
                 }
 
                 // Correct color for end node
                 else if (recent.Label == this.SearchingEndNode?.Label)
                 {
-                    this.RenderNode(recent, Brushes.Yellow);
+                    this.RenderNode(recent, Brushes.Yellow, renderBuffer: false);
                 }
 
                 // Default color
                 else
                 {
-                    this.RenderNode(recent);
+                    this.RenderNode(recent, renderBuffer: false);
                 }
             }
 
@@ -1231,19 +1266,19 @@ namespace SearchAlgorithmVisualization
                 // Correct color for start node
                 if (next.Label == this.SearchingStartNode?.Label)
                 {
-                    this.RenderNode(next, Brushes.Blue);
+                    this.RenderNode(next, Brushes.Blue, renderBuffer: false);
                 }
 
                 // Correct color for end node
                 else if (next.Label == this.SearchingEndNode?.Label)
                 {
-                    this.RenderNode(next, Brushes.Yellow);
+                    this.RenderNode(next, Brushes.Yellow, renderBuffer: false);
                 }
 
                 // Default color
                 else
                 {
-                    this.RenderNode(next);
+                    this.RenderNode(next, renderBuffer: false);
                 }
             }
 
@@ -1282,7 +1317,7 @@ namespace SearchAlgorithmVisualization
             // Render the current node with a different colored brush
             Brush currentNodeBrush = this.SearchingEndNode?.Label == this.SearchingCurrentNode.Label ? Brushes.Turquoise :
                 this.SearchingStartNode?.Label == this.SearchingCurrentNode.Label ? Brushes.CadetBlue : Brushes.Purple;
-            this.RenderNode(this.SearchingCurrentNode, currentNodeBrush);
+            this.RenderNode(this.SearchingCurrentNode, currentNodeBrush, renderBuffer: false);
 
             // Update global index to local index if passed in a different different index
             // Else increment the default index
@@ -1296,6 +1331,8 @@ namespace SearchAlgorithmVisualization
 
             // Update simulation navigation status per iteration
             this.UpdateSimulationNavigationButtonsAvailability();
+
+            this.buffer.Render();
         }
 
         // Highlight the nodes that are available from the current node
@@ -1311,7 +1348,7 @@ namespace SearchAlgorithmVisualization
             foreach (Node n in this.nodes)
             {
                 // Render defaults to reset it
-                this.RenderNode(n);
+                this.RenderNode(n, renderBuffer: false);
             }
 
             foreach (string s in nodes)
@@ -1320,7 +1357,7 @@ namespace SearchAlgorithmVisualization
 
                 if (n == null) continue;
 
-                this.RenderNode(n, b);
+                this.RenderNode(n, b, renderBuffer: false);
             }
         }
 
@@ -1335,7 +1372,7 @@ namespace SearchAlgorithmVisualization
             foreach (Edge e in this.edges)
             {
                 // Render defaults to reset
-                this.RenderEdge(e);
+                this.RenderEdge(e, renderBuffer: false);
             }
 
             for (int i = 0; i + 1 < nodes.Count; i++)
@@ -1344,7 +1381,7 @@ namespace SearchAlgorithmVisualization
 
                 if (e == null) continue;
 
-                this.RenderEdge(e, b: Brushes.DarkViolet);
+                this.RenderEdge(e, b: Brushes.DarkViolet, renderBuffer: false);
             }
         }
 
