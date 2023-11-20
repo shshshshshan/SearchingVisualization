@@ -348,6 +348,13 @@ namespace SearchAlgorithmVisualization
 
                 if (perpendicularDistance > THRESHOLD) continue;
 
+                // Calculate the intersection point
+                double t = ((mouseX - x1) * (x2 - x1) + (mouseY - y1) * (y2 - y1)) / (Math.Pow(x2 - x1, 2) + Math.Pow(y2 - y1, 2));
+                var (xi, yi) = (x1 + t * (x2 - x1), y1 + t * (y2 - y1));
+
+                // Check if the intersection point is within the edge's endpoints
+                if (xi < Math.Min(x1, x2) || xi > Math.Max(x1, x2) || yi < Math.Min(y1, y2) || yi > Math.Max(y1, y2)) continue;
+
                 return existingEdge;
             }
 
