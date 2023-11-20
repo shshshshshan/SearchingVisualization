@@ -21,6 +21,23 @@ namespace SearchAlgorithmVisualization.Forms
             InitializeComponent();
         }
 
+        protected override bool ProcessCmdKey(ref Message msg, Keys key)
+        {
+            if (key == Keys.Escape)
+            {
+                this.CancelButtonPressed?.Invoke(this, EventArgs.Empty);
+                this.Hide();
+            }
+
+            else if (key == Keys.Enter)
+            {
+                this.EnterButtonPressed?.Invoke(this, EventArgs.Empty);
+                this.Hide();
+            }
+
+            return base.ProcessCmdKey(ref msg, key);
+        }
+
         public int? GetInput()
         {
             if (int.TryParse(this.CustomValueTextbox.Text, out int value))

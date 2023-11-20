@@ -121,6 +121,133 @@ namespace SearchAlgorithmVisualization
 
             this.BeamWidthmPromptForm.CancelButtonPressed += BeamWidthmPromptForm_CancelButtonPressed;
             this.BeamWidthmPromptForm.EnterButtonPressed += BeamWidthmPromptForm_EnterButtonPressed;
+
+            this.LogsForm.Hotkey += LogsForm_Hotkey;
+        }
+
+        private void LogsForm_Hotkey(object? sender, EventArgs e)
+        {
+            Keys logsKeyPressed = this.LogsForm.GetPressedKey();
+
+            this.HotkeyHandler(logsKeyPressed);
+        }
+
+        // Hotkey handler
+        private void HotkeyHandler(Keys key)
+        {
+            // General hotkeys
+            if (key == Keys.L)
+            {
+                // Debouce to prevent spam
+                this.LogsDebouncer.Debounce(() => this.ToggleLogs(), 300, SynchronizationContext.Current);
+            }
+
+            else if (key == Keys.Up || key == Keys.W)
+            {
+                if (this.SimulationSpeedTrackBar.Value == this.SimulationSpeedTrackBar.Maximum)
+                    return;
+
+                this.SimulationSpeedTrackBar.Value++;
+            }
+
+            else if (key == Keys.Down || key == Keys.S)
+            {
+                if (this.SimulationSpeedTrackBar.Value == this.SimulationSpeedTrackBar.Minimum)
+                    return;
+
+                this.SimulationSpeedTrackBar.Value--;
+            }
+
+            // Simulation hotkeys
+            else if (key == Keys.Space || (!this.SimulationRunning && !this.InitializeSimulation && key == Keys.Enter))
+            {
+                this.RunSimulationButton_Click(this, EventArgs.Empty);
+            }
+
+            else if (key == Keys.Escape)
+            {
+                this.ResetButton_Click(this, EventArgs.Empty);
+            }
+
+            else if (this.SimulationRunning)
+            {
+                if (this.SimulationStepForwardButton.Enabled && (key == Keys.Right || key == Keys.D || key == Keys.OemPeriod))
+                {
+                    this.AnimationStepForward();
+                }
+
+                else if (this.SimulationStepBackButton.Enabled && (key == Keys.Left || key == Keys.A || key == Keys.Oemcomma))
+                {
+                    this.AnimationStepBackward();
+                }
+            }
+
+            // Creation mode
+            else if (this.NodeModeRadioButton.Enabled && (key == Keys.N || key == Keys.Q))
+            {
+                this.NodeModeRadioButton.Checked = true;
+                this.EdgeModeRadioButton.Checked = false;
+            }
+
+            else if (this.EdgeModeRadioButton.Enabled && key == Keys.E)
+            {
+                this.EdgeModeRadioButton.Checked = true;
+                this.NodeModeRadioButton.Checked = false;
+            }
+
+            // Customizing hotkeys
+            else if (this.HasTargetNodeCheckBox.Enabled && key == Keys.Z)
+            {
+                this.HasTargetNodeCheckBox.Checked = !this.HasTargetNodeCheckBox.Checked;
+            }
+
+            else if (this.CustomGCostCheckBox.Enabled && key == Keys.X)
+            {
+                this.CustomGCostCheckBox.Checked = !this.CustomGCostCheckBox.Checked;
+            }
+
+            else if (this.CustomHCostCheckBox.Enabled && key == Keys.C)
+            {
+                this.CustomHCostCheckBox.Checked = !this.CustomHCostCheckBox.Checked;
+            }
+
+            // Changing algorithms
+            else if (key == Keys.D1)
+            {
+                this.AlgorithmDropdown.SelectedIndex = 0;
+            }
+
+            else if (key == Keys.D2)
+            {
+                this.AlgorithmDropdown.SelectedIndex = 1;
+            }
+
+            else if (key == Keys.D3)
+            {
+                this.AlgorithmDropdown.SelectedIndex = 2;
+            }
+
+            else if (key == Keys.D4)
+            {
+                this.AlgorithmDropdown.SelectedIndex = 3;
+            }
+
+            else if (key == Keys.D5)
+            {
+                this.AlgorithmDropdown.SelectedIndex = 4;
+            }
+
+            else if (key == Keys.D6)
+            {
+                this.AlgorithmDropdown.SelectedIndex = 5;
+            }
+        }
+
+        protected override bool ProcessCmdKey(ref Message msg, Keys key)
+        {
+            this.HotkeyHandler(key);
+
+            return base.ProcessCmdKey(ref msg, key);
         }
 
         // Cleanup
@@ -375,6 +502,9 @@ namespace SearchAlgorithmVisualization
 
         private async void DrawingPanel_MouseDown(object sender, MouseEventArgs e)
         {
+            // Only works for right click
+            if (e.Button == MouseButtons.Right) { return; }
+
             // Set constant node radius
             const int SCALE = 15;
 
@@ -1084,24 +1214,8 @@ namespace SearchAlgorithmVisualization
             this.RunSimulationButton.Enabled = true;
             this.RunSimulationButton.Cursor = Cursors.Hand;
 
-            // Initially refresh the nodes rendering
-            foreach (Node n in this.nodes)
-            {
-                this.RenderNode(n, renderBuffer: false);
-            }
-
-            // Redraw the starting search node and ending node if available
-            if (this.SearchingStartNode != null)
-            {
-                this.RenderNode(this.SearchingStartNode, Brushes.Blue, renderBuffer: false);
-            }
-
-            if (this.SearchingEndNode != null)
-            {
-                this.RenderNode(this.SearchingEndNode, Brushes.Yellow, renderBuffer: false);
-            }
-
-            this.buffer.Render();
+            // Initially refresh the scene
+            this.RenderEntities();
 
             this.AnimatePath(path);
 
@@ -1190,16 +1304,18 @@ namespace SearchAlgorithmVisualization
                 // Render the default for the last node if there is
                 if (this.SearchPath != null && searchIndex > 0)
                 {
-                    this.RenderNode(this.SearchPath[searchIndex - 1]);
+                    this.RenderNode(this.SearchPath[searchIndex - 1], renderBuffer: false);
                 }
 
                 // Clean up and restore defaults
 
                 // Restore defaults
                 this.RestoreControlPanelControls();
-                this.RenderNode(this.SearchingStartNode);
-                this.RenderNode(this.SearchingEndNode);
+                this.RenderNode(this.SearchingStartNode, renderBuffer: false);
+                this.RenderNode(this.SearchingEndNode, renderBuffer: false);
                 this.RunSimulationButton.Text = "Run";
+
+                this.buffer.Render();
 
                 // Restore or update control panel settings
                 this.UpdateControlPanelSettings();
@@ -1207,8 +1323,6 @@ namespace SearchAlgorithmVisualization
                 // Simulation navigation reset
                 this.SimulationStepBackButton.Enabled = false;
                 this.SimulationStepForwardButton.Enabled = false;
-
-                this.DrawingPanel.BackColor = Color.White;
 
                 // Cleanup
                 this.AnimationClock.Enabled = false;
@@ -1341,7 +1455,7 @@ namespace SearchAlgorithmVisualization
         {
             if (nodes == null) return;
 
-            if (b == null) { b = Brushes.DarkOrange; }
+            b ??= Brushes.Orange;
 
             // Render default for non-neighbor nodes
             // Dark-orange for neighbor nodes
@@ -1365,9 +1479,9 @@ namespace SearchAlgorithmVisualization
         // This is used in animation
         private void HighlightTraversedPath(List<string>? nodes, Brush? b = null)
         {
-            if (nodes == null || nodes.Count < 2) return;
+            if (nodes == null) return;
 
-            if (b == null) { b = Brushes.BlueViolet; }
+            b ??= Brushes.BlueViolet;
 
             foreach (Edge e in this.edges)
             {
@@ -1624,31 +1738,42 @@ namespace SearchAlgorithmVisualization
             this.HasTargetNodeCheckBox.Checked = false;
         }
 
-        // Used to step back through the animation
-        // Only when animation is paused
-        // Only also when traversed node index > 0
         private void SimulationStepBackButton_Click(object sender, EventArgs e)
         {
-            if (this.traversedNodeIndex <= 0) return;
+            this.AnimationStepBackward();
+        }
 
-            // Call animation tick once to show the changes
-            // Using -2 index since the current index is already updated by the animation at this point
-            this.AnimateCurrentNode(this.traversedNodeIndex - 2);
 
-            // Update simulation navigations availability
-            this.UpdateSimulationNavigationButtonsAvailability();
+        private void SimulationStepForwardButton_Click(object sender, EventArgs e)
+        {
+            this.AnimationStepForward();
         }
 
         // Used to step forward through the animation
         // Only when animation is paused
         // Only also when traversed node index < search path length - 1
-        private void SimulationStepForwardButton_Click(object sender, EventArgs e)
+        private void AnimationStepForward()
         {
             if (this.SearchPath != null && this.traversedNodeIndex >= this.SearchPath.Count) return;
 
             // Call animation tick once to show the changes
             // Using the current index since at this point, the index is incremented already after animation
             this.AnimateCurrentNode(this.traversedNodeIndex);
+
+            // Update simulation navigations availability
+            this.UpdateSimulationNavigationButtonsAvailability();
+        }
+
+        // Used to step back through the animation
+        // Only when animation is paused
+        // Only also when traversed node index > 0
+        private void AnimationStepBackward()
+        {
+            if (this.traversedNodeIndex <= 0) return;
+
+            // Call animation tick once to show the changes
+            // Using -2 index since the current index is already updated by the animation at this point
+            this.AnimateCurrentNode(this.traversedNodeIndex - 2);
 
             // Update simulation navigations availability
             this.UpdateSimulationNavigationButtonsAvailability();

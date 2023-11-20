@@ -29,6 +29,7 @@
         private void InitializeComponent()
         {
             components = new System.ComponentModel.Container();
+            System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(MainForm));
             ControlPanel = new Panel();
             LogsPanel = new Panel();
             LogsLabel = new Label();
@@ -128,6 +129,7 @@
             LogsOpenButton.Name = "LogsOpenButton";
             LogsOpenButton.Size = new Size(41, 40);
             LogsOpenButton.TabIndex = 0;
+            LogsOpenButton.TabStop = false;
             LogsOpenButton.TextAlign = ContentAlignment.TopCenter;
             LogsOpenButton.UseVisualStyleBackColor = false;
             LogsOpenButton.Click += LogsOpenButton_Click;
@@ -154,6 +156,7 @@
             CustomHCostCheckBox.Name = "CustomHCostCheckBox";
             CustomHCostCheckBox.Size = new Size(15, 14);
             CustomHCostCheckBox.TabIndex = 16;
+            CustomHCostCheckBox.TabStop = false;
             CustomHCostCheckBox.UseVisualStyleBackColor = true;
             // 
             // CustomGCostCheckBox
@@ -164,6 +167,7 @@
             CustomGCostCheckBox.Name = "CustomGCostCheckBox";
             CustomGCostCheckBox.Size = new Size(15, 14);
             CustomGCostCheckBox.TabIndex = 15;
+            CustomGCostCheckBox.TabStop = false;
             CustomGCostCheckBox.UseVisualStyleBackColor = true;
             // 
             // CustomHCostLabel
@@ -198,6 +202,7 @@
             HasTargetNodeCheckBox.Name = "HasTargetNodeCheckBox";
             HasTargetNodeCheckBox.Size = new Size(15, 14);
             HasTargetNodeCheckBox.TabIndex = 11;
+            HasTargetNodeCheckBox.TabStop = false;
             HasTargetNodeCheckBox.UseVisualStyleBackColor = true;
             // 
             // HasTargetNodeLabel
@@ -222,6 +227,7 @@
             ResetButton.Name = "ResetButton";
             ResetButton.Size = new Size(95, 40);
             ResetButton.TabIndex = 9;
+            ResetButton.TabStop = false;
             ResetButton.Text = "Reset";
             ResetButton.UseVisualStyleBackColor = false;
             ResetButton.Click += ResetButton_Click;
@@ -236,6 +242,7 @@
             RunSimulationButton.Name = "RunSimulationButton";
             RunSimulationButton.Size = new Size(99, 40);
             RunSimulationButton.TabIndex = 8;
+            RunSimulationButton.TabStop = false;
             RunSimulationButton.Text = "Run";
             RunSimulationButton.UseVisualStyleBackColor = false;
             RunSimulationButton.Click += RunSimulationButton_Click;
@@ -288,6 +295,7 @@
             EdgeEditButton.Name = "EdgeEditButton";
             EdgeEditButton.Size = new Size(26, 23);
             EdgeEditButton.TabIndex = 8;
+            EdgeEditButton.TabStop = false;
             EdgeEditButton.UseVisualStyleBackColor = true;
             EdgeEditButton.Click += EdgeEditButton_Click;
             // 
@@ -299,6 +307,7 @@
             EdgeDeleteButton.Name = "EdgeDeleteButton";
             EdgeDeleteButton.Size = new Size(26, 23);
             EdgeDeleteButton.TabIndex = 7;
+            EdgeDeleteButton.TabStop = false;
             EdgeDeleteButton.UseVisualStyleBackColor = true;
             EdgeDeleteButton.Click += EdgeDeleteButton_Click;
             // 
@@ -310,6 +319,7 @@
             NodeEditButton.Name = "NodeEditButton";
             NodeEditButton.Size = new Size(26, 23);
             NodeEditButton.TabIndex = 6;
+            NodeEditButton.TabStop = false;
             NodeEditButton.UseVisualStyleBackColor = true;
             NodeEditButton.Click += NodeEditButton_Click;
             // 
@@ -321,6 +331,7 @@
             NodeDeleteButton.Name = "NodeDeleteButton";
             NodeDeleteButton.Size = new Size(26, 23);
             NodeDeleteButton.TabIndex = 0;
+            NodeDeleteButton.TabStop = false;
             NodeDeleteButton.UseVisualStyleBackColor = true;
             NodeDeleteButton.Click += NodeDeleteButton_Click;
             // 
@@ -331,7 +342,7 @@
             EdgeModeRadioButton.Location = new Point(175, 79);
             EdgeModeRadioButton.Name = "EdgeModeRadioButton";
             EdgeModeRadioButton.Size = new Size(13, 30);
-            EdgeModeRadioButton.TabIndex = 5;
+            EdgeModeRadioButton.TabIndex = 0;
             EdgeModeRadioButton.TextAlign = ContentAlignment.MiddleCenter;
             EdgeModeRadioButton.UseVisualStyleBackColor = true;
             EdgeModeRadioButton.CheckedChanged += EdgeModeRadioButton_CheckedChanged;
@@ -344,8 +355,7 @@
             NodeModeRadioButton.Location = new Point(175, 43);
             NodeModeRadioButton.Name = "NodeModeRadioButton";
             NodeModeRadioButton.Size = new Size(13, 30);
-            NodeModeRadioButton.TabIndex = 4;
-            NodeModeRadioButton.TabStop = true;
+            NodeModeRadioButton.TabIndex = 0;
             NodeModeRadioButton.TextAlign = ContentAlignment.MiddleCenter;
             NodeModeRadioButton.UseVisualStyleBackColor = true;
             NodeModeRadioButton.CheckedChanged += NodeModeRadioButton_CheckedChanged;
@@ -398,6 +408,7 @@
             AlgorithmDropdown.RightToLeft = RightToLeft.No;
             AlgorithmDropdown.Size = new Size(172, 26);
             AlgorithmDropdown.TabIndex = 3;
+            AlgorithmDropdown.TabStop = false;
             AlgorithmDropdown.SelectedValueChanged += AlgorithmDropdown_SelectedValueChanged;
             // 
             // AlgorithmSelectionLabel
@@ -448,6 +459,7 @@
             SimulationStepBackButton.Name = "SimulationStepBackButton";
             SimulationStepBackButton.Size = new Size(46, 35);
             SimulationStepBackButton.TabIndex = 14;
+            SimulationStepBackButton.TabStop = false;
             SimulationStepBackButton.Text = "«";
             SimulationStepBackButton.TextAlign = ContentAlignment.TopCenter;
             SimulationStepBackButton.UseVisualStyleBackColor = false;
@@ -463,6 +475,7 @@
             SimulationStepForwardButton.Name = "SimulationStepForwardButton";
             SimulationStepForwardButton.Size = new Size(46, 35);
             SimulationStepForwardButton.TabIndex = 13;
+            SimulationStepForwardButton.TabStop = false;
             SimulationStepForwardButton.Text = "»";
             SimulationStepForwardButton.TextAlign = ContentAlignment.TopCenter;
             SimulationStepForwardButton.UseVisualStyleBackColor = false;
@@ -500,7 +513,8 @@
             SimulationSpeedTrackBar.Minimum = 1;
             SimulationSpeedTrackBar.Name = "SimulationSpeedTrackBar";
             SimulationSpeedTrackBar.Size = new Size(172, 45);
-            SimulationSpeedTrackBar.TabIndex = 10;
+            SimulationSpeedTrackBar.TabIndex = 0;
+            SimulationSpeedTrackBar.TabStop = false;
             SimulationSpeedTrackBar.Value = 5;
             SimulationSpeedTrackBar.Scroll += SimulationSpeedTrackBar_Scroll;
             // 
@@ -544,11 +558,12 @@
             Controls.Add(DrawingPanel);
             Controls.Add(ControlPanel);
             FormBorderStyle = FormBorderStyle.FixedSingle;
+            Icon = (Icon)resources.GetObject("$this.Icon");
             MaximizeBox = false;
             Name = "MainForm";
             RightToLeft = RightToLeft.No;
             StartPosition = FormStartPosition.CenterScreen;
-            Text = "Activity 5 - Searching Algorithms";
+            Text = "Searching Algorithms Visualizer";
             FormClosing += MainForm_FormClosing;
             ControlPanel.ResumeLayout(false);
             LogsPanel.ResumeLayout(false);

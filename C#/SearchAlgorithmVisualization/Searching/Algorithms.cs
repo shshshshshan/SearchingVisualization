@@ -269,40 +269,41 @@ namespace SearchAlgorithmVisualization.Searching
                 // Initialize number of possible paths from current node here to create a default value
                 iterDict["n_paths"] = 0;
 
-                if (end != null && node.Label == end.Label) break;
-
-                // Loop the edges backwards to traverse the graph left-to-right (alphabetically)
-                for (int i = edges.Count - 1; i >= 0; i--)
+                if (end == null || node.Label != end.Label)
                 {
-                    Edge e = edges[i];
-
-                    // Skip if current edge does not contain the current node
-                    if (!e.HasMember(node.Label)) continue;
-
-                    // Node of the other point of the edge connection based on label
-                    // Since node can be from different address
-                    Node other = node.Label == e.PointA.Label ? e.PointB : e.PointA;
-
-                    // Check the label of the other edge if it is an ancestor of the current node
-                    // Skip if present
-                    if (ancestry[node.GUID].Contains(other.Label)) continue;
-
-                    // Add the other as part of current node's possible path list
-                    ((List<string>)(iterDict["paths"])).Add(other.Label);
-
-                    // Copy the other edge of the node to create a new reference
-                    Node copy = new Node(other);
-
-                    // Initialize the copy's ancestry
-                    // Add over the ancestry of the current node and the current node itself
-                    ancestry[copy.GUID] = new List<string>
+                    // Loop the edges backwards to traverse the graph left-to-right (alphabetically)
+                    for (int i = edges.Count - 1; i >= 0; i--)
                     {
-                        node.Label
-                    };
-                    ancestry[copy.GUID].AddRange(ancestry[node.GUID]);
+                        Edge e = edges[i];
 
-                    // Add it to the stack
-                    stack.Push(copy);
+                        // Skip if current edge does not contain the current node
+                        if (!e.HasMember(node.Label)) continue;
+
+                        // Node of the other point of the edge connection based on label
+                        // Since node can be from different address
+                        Node other = node.Label == e.PointA.Label ? e.PointB : e.PointA;
+
+                        // Check the label of the other edge if it is an ancestor of the current node
+                        // Skip if present
+                        if (ancestry[node.GUID].Contains(other.Label)) continue;
+
+                        // Add the other as part of current node's possible path list
+                        ((List<string>)(iterDict["paths"])).Add(other.Label);
+
+                        // Copy the other edge of the node to create a new reference
+                        Node copy = new Node(other);
+
+                        // Initialize the copy's ancestry
+                        // Add over the ancestry of the current node and the current node itself
+                        ancestry[copy.GUID] = new List<string>
+                        {
+                            node.Label
+                        };
+                        ancestry[copy.GUID].AddRange(ancestry[node.GUID]);
+
+                        // Add it to the stack
+                        stack.Push(copy);
+                    }
                 }
 
                 // ['container']
@@ -317,6 +318,8 @@ namespace SearchAlgorithmVisualization.Searching
 
                 // Update iteration
                 iteration++;
+
+                if (end != null && node.Label == end.Label) break;
             }
 
             // Add the final resulting path to the result container
@@ -485,37 +488,38 @@ namespace SearchAlgorithmVisualization.Searching
                 // Initialize number of possible paths from current node here to create a default value
                 iterDict["n_paths"] = 0;
 
-                if (end != null && node.Label == end.Label) break;
-
-                foreach (Edge e in edges)
+                if (end == null || node.Label != end.Label)
                 {
-                    // Skip if current edge does not contain the current node
-                    if (!e.HasMember(node.Label)) continue;
-
-                    // Node of the other point of the edge connection based on label
-                    // Since node can be from different address
-                    Node other = node.Label == e.PointA.Label ? e.PointB : e.PointA;
-
-                    // Check the label of the other edge if it is an ancestor of the current node
-                    // Skip if present
-                    if (ancestry[node.GUID].Contains(other.Label)) continue;
-
-                    // Add the other as part of current node's possible path list
-                    ((List<string>)(iterDict["paths"])).Add(other.Label);
-
-                    // Copy the other edge of the node to create a new reference
-                    Node copy = new Node(other);
-
-                    // Initialize the copy's ancestry
-                    // Add over the ancestry of the current node and the current node itself
-                    ancestry[copy.GUID] = new List<string>
+                    foreach (Edge e in edges)
                     {
-                        node.Label
-                    };
-                    ancestry[copy.GUID].AddRange(ancestry[node.GUID]);
+                        // Skip if current edge does not contain the current node
+                        if (!e.HasMember(node.Label)) continue;
 
-                    // Add it to the queue
-                    queue.Enqueue(copy);
+                        // Node of the other point of the edge connection based on label
+                        // Since node can be from different address
+                        Node other = node.Label == e.PointA.Label ? e.PointB : e.PointA;
+
+                        // Check the label of the other edge if it is an ancestor of the current node
+                        // Skip if present
+                        if (ancestry[node.GUID].Contains(other.Label)) continue;
+
+                        // Add the other as part of current node's possible path list
+                        ((List<string>)(iterDict["paths"])).Add(other.Label);
+
+                        // Copy the other edge of the node to create a new reference
+                        Node copy = new Node(other);
+
+                        // Initialize the copy's ancestry
+                        // Add over the ancestry of the current node and the current node itself
+                        ancestry[copy.GUID] = new List<string>
+                        {
+                            node.Label
+                        };
+                        ancestry[copy.GUID].AddRange(ancestry[node.GUID]);
+
+                        // Add it to the queue
+                        queue.Enqueue(copy);
+                    }
                 }
 
                 // ['container']
@@ -530,6 +534,8 @@ namespace SearchAlgorithmVisualization.Searching
 
                 // Update iteration
                 iteration++;
+
+                if (end != null && node.Label == end.Label) break;
             }
 
             // Add the final resulting path to the result container
@@ -780,41 +786,43 @@ namespace SearchAlgorithmVisualization.Searching
                 // Initialize number of possible paths from current node here to create a default value
                 iterDict["n_paths"] = 0;
 
-                if (node.Label == end.Label) break;
-
-                // Loop each edge
-                foreach (Edge e in edges)
+                if (node.Label != end.Label)
                 {
-                    // Skip if current edge does not contain the current node
-                    if (!e.HasMember(node.Label)) continue;
-
-                    // Node of the other point of the edge connection based on label
-                    // Since node can be from different address
-                    Node other = node.Label == e.PointA.Label ? e.PointB : e.PointA;
-
-                    // Check the label of the other edge if it is an ancestor of the current node
-                    // Skip if present
-                    if (ancestry[node.GUID].Contains(other.Label)) continue;
-
-                    // Add the other as part of current node's possible path list
-                    ((List<string>)(iterDict["paths"])).Add(other.Label);
-
-                    // Copy the other edge of the node to create a new reference
-                    Node copy = new Node(other);
-
-                    // Initialize the copy's ancestry
-                    // Add over the ancestry of the current node and the current node itself
-                    ancestry[copy.GUID] = new List<string>
+                    // Loop each edge
+                    foreach (Edge e in edges)
                     {
-                        node.Label
-                    };
-                    ancestry[copy.GUID].AddRange(ancestry[node.GUID]);
+                        // Skip if current edge does not contain the current node
+                        if (!e.HasMember(node.Label)) continue;
 
-                    // Add it to the listQueue
-                    // Addition of new node is sorted upon addition
-                    // Sort key is first by node heuristic cost then by node name length then by node name
-                    int insertIndex = this.SortedInsertionIndexBeam(listQueue, copy);
-                    listQueue.Insert(insertIndex, copy);
+                        // Node of the other point of the edge connection based on label
+                        // Since node can be from different address
+                        Node other = node.Label == e.PointA.Label ? e.PointB : e.PointA;
+
+                        // Check the label of the other edge if it is an ancestor of the current node
+                        // Skip if present
+                        if (ancestry[node.GUID].Contains(other.Label)) continue;
+
+                        // Add the other as part of current node's possible path list
+                        ((List<string>)(iterDict["paths"])).Add(other.Label);
+
+                        // Copy the other edge of the node to create a new reference
+                        Node copy = new Node(other);
+
+                        // Initialize the copy's ancestry
+                        // Add over the ancestry of the current node and the current node itself
+                        ancestry[copy.GUID] = new List<string>
+                        {
+                            node.Label
+                        };
+                        ancestry[copy.GUID].AddRange(ancestry[node.GUID]);
+
+                        // Add it to the listQueue
+                        // Addition of new node is sorted upon addition
+                        // Sort key is first by node heuristic cost then by node name length then by node name
+                        int insertIndex = this.SortedInsertionIndexBeam(listQueue, copy);
+                        listQueue.Insert(insertIndex, copy);
+                    }
+
                 }
 
                 // After enqueuing, prune the branches to W branches
@@ -835,6 +843,8 @@ namespace SearchAlgorithmVisualization.Searching
 
                 // Update iteration
                 iteration++;
+
+                if (node.Label == end.Label) break;
             }
 
             // Add the final resulting path to the result container
@@ -1043,43 +1053,44 @@ namespace SearchAlgorithmVisualization.Searching
                 // Initialize number of possible paths from current node here to create a default value
                 iterDict["n_paths"] = 0;
 
-                if (end != null && node.Label == end.Label) break;
-
-                // Loop each edge
-                foreach (Edge e in edges)
+                if (end == null || node.Label != end.Label)
                 {
-                    // Skip if current edge does not contain the current node
-                    if (!e.HasMember(node.Label)) continue;
-
-                    // Node of the other point of the edge connection based on label
-                    // Since node can be from different address
-                    Node other = node.Label == e.PointA.Label ? e.PointB : e.PointA;
-
-                    // Check the label of the other edge if it is an ancestor of the current node
-                    // Skip if present
-                    if (ancestry[node.GUID].Contains(other.Label)) continue;
-
-                    // Add the other as part of current node's possible path list
-                    ((List<string>)(iterDict["paths"])).Add(other.Label);
-
-                    // Copy the other edge of the node to create a new reference
-                    Node copy = new Node(other);
-
-                    // Initialize the copy's ancestry
-                    // Add over the ancestry of the current node and the current node itself
-                    ancestry[copy.GUID] = new List<string>
+                    // Loop each edge
+                    foreach (Edge e in edges)
                     {
-                        node.Label
-                    };
-                    ancestry[copy.GUID].AddRange(ancestry[node.GUID]);
+                        // Skip if current edge does not contain the current node
+                        if (!e.HasMember(node.Label)) continue;
 
-                    // Accumulated weight for current adjacent node = edge weight + current adjancent node accumulated weight
-                    accumulatedWeight[copy.GUID] = (int)(e.Weight + accumulatedWeight[node.GUID]);
+                        // Node of the other point of the edge connection based on label
+                        // Since node can be from different address
+                        Node other = node.Label == e.PointA.Label ? e.PointB : e.PointA;
 
-                    // Add the copy node in a sorted manner
-                    // The sort order is first by accumulated weight, then by node label length, then by name
-                    int insertIndex = this.SortedInsertionIndex(listQueue, copy, accumulatedWeight);
-                    listQueue.Insert(insertIndex, copy);
+                        // Check the label of the other edge if it is an ancestor of the current node
+                        // Skip if present
+                        if (ancestry[node.GUID].Contains(other.Label)) continue;
+
+                        // Add the other as part of current node's possible path list
+                        ((List<string>)(iterDict["paths"])).Add(other.Label);
+
+                        // Copy the other edge of the node to create a new reference
+                        Node copy = new Node(other);
+
+                        // Initialize the copy's ancestry
+                        // Add over the ancestry of the current node and the current node itself
+                        ancestry[copy.GUID] = new List<string>
+                        {
+                            node.Label
+                        };
+                        ancestry[copy.GUID].AddRange(ancestry[node.GUID]);
+
+                        // Accumulated weight for current adjacent node = edge weight + current adjancent node accumulated weight
+                        accumulatedWeight[copy.GUID] = (int)(e.Weight + accumulatedWeight[node.GUID]);
+
+                        // Add the copy node in a sorted manner
+                        // The sort order is first by accumulated weight, then by node label length, then by name
+                        int insertIndex = this.SortedInsertionIndex(listQueue, copy, accumulatedWeight);
+                        listQueue.Insert(insertIndex, copy);
+                    }
                 }
 
                 // ['container']
@@ -1094,6 +1105,8 @@ namespace SearchAlgorithmVisualization.Searching
 
                 // Update iteration
                 iteration++;
+
+                if (end != null && node.Label == end.Label) break;
             }
 
             // Add the final resulting path to the result container
@@ -1318,46 +1331,47 @@ namespace SearchAlgorithmVisualization.Searching
                 // Initialize number of possible paths from current node here to create a default value
                 iterDict["n_paths"] = 0;
 
-                if (end != null && node.Label == end.Label) break;
-
-                // Loop each edge
-                foreach (Edge e in edges)
+                if (node.Label != end.Label)
                 {
-                    // Skip if current edge does not contain the current node
-                    if (!e.HasMember(node.Label)) continue;
-
-                    // Node of the other point of the edge connection based on label
-                    // Since node can be from different address
-                    Node other = node.Label == e.PointA.Label ? e.PointB : e.PointA;
-
-                    // Check the label of the other edge if it is an ancestor of the current node
-                    // Skip if present
-                    if (ancestry[node.GUID].Contains(other.Label)) continue;
-
-                    // Add the other as part of current node's possible path list
-                    ((List<string>)(iterDict["paths"])).Add(other.Label);
-
-                    // Copy the other edge of the node to create a new reference
-                    Node copy = new Node(other);
-
-                    // Initialize the copy's ancestry
-                    // Add over the ancestry of the current node and the current node itself
-                    ancestry[copy.GUID] = new List<string>
+                    // Loop each edge
+                    foreach (Edge e in edges)
                     {
-                        node.Label
-                    };
-                    ancestry[copy.GUID].AddRange(ancestry[node.GUID]);
+                        // Skip if current edge does not contain the current node
+                        if (!e.HasMember(node.Label)) continue;
 
-                    // Update accumulated g-cost
-                    accumulatedGCost[copy.GUID] = (int)(e.Weight + accumulatedGCost[node.GUID]);
+                        // Node of the other point of the edge connection based on label
+                        // Since node can be from different address
+                        Node other = node.Label == e.PointA.Label ? e.PointB : e.PointA;
 
-                    // Update the h-cost
-                    accumulatedFCost[copy.GUID] = (accumulatedGCost[copy.GUID] + copy.Heuristics);
+                        // Check the label of the other edge if it is an ancestor of the current node
+                        // Skip if present
+                        if (ancestry[node.GUID].Contains(other.Label)) continue;
 
-                    // Add the copy node in a sorted manner
-                    // The sort order is first by accumulated weight, then by node label length, then by name
-                    int insertIndex = this.SortedInsertionIndex(listQueue, copy, accumulatedFCost);
-                    listQueue.Insert(insertIndex, copy);
+                        // Add the other as part of current node's possible path list
+                        ((List<string>)(iterDict["paths"])).Add(other.Label);
+
+                        // Copy the other edge of the node to create a new reference
+                        Node copy = new Node(other);
+
+                        // Initialize the copy's ancestry
+                        // Add over the ancestry of the current node and the current node itself
+                        ancestry[copy.GUID] = new List<string>
+                        {
+                            node.Label
+                        };
+                        ancestry[copy.GUID].AddRange(ancestry[node.GUID]);
+
+                        // Update accumulated g-cost
+                        accumulatedGCost[copy.GUID] = (int)(e.Weight + accumulatedGCost[node.GUID]);
+
+                        // Update the h-cost
+                        accumulatedFCost[copy.GUID] = (accumulatedGCost[copy.GUID] + copy.Heuristics);
+
+                        // Add the copy node in a sorted manner
+                        // The sort order is first by accumulated weight, then by node label length, then by name
+                        int insertIndex = this.SortedInsertionIndex(listQueue, copy, accumulatedFCost);
+                        listQueue.Insert(insertIndex, copy);
+                    }
                 }
 
                 // ['container']
@@ -1372,6 +1386,8 @@ namespace SearchAlgorithmVisualization.Searching
 
                 // Update iteration
                 iteration++;
+
+                if (node.Label == end.Label) break;
             }
 
             // Add the final resulting path to the result container

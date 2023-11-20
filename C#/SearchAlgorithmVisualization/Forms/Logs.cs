@@ -13,9 +13,28 @@ namespace SearchAlgorithmVisualization.Forms
 {
     public partial class Logs : Form
     {
+        public event EventHandler? Hotkey;
+
+        public Keys LastPressedKey = Keys.None;
+
         public Logs()
         {
             InitializeComponent();
+        }
+
+        protected override bool ProcessCmdKey(ref Message msg, Keys key)
+        {
+            // Inherit hotkeys from main form
+            this.LastPressedKey = key;
+
+            this.Hotkey?.Invoke(this, EventArgs.Empty);
+
+            return base.ProcessCmdKey(ref msg, key);
+        }
+
+        public Keys GetPressedKey()
+        {
+            return this.LastPressedKey;
         }
 
         // Function to render the current node by label
