@@ -9,9 +9,9 @@ namespace SearchAlgorithmVisualization.Searching
     public class Node
     {
         public string Label;
-        public int X { get; private set; }
-        public int Y { get; private set; }
-        public int Radius { get; private set; }
+        public int X { get; set; }
+        public int Y { get; set; }
+        public int Radius { get; set; }
 
         // Id here is not really unique, this is to identify that two node objects of the same label will 
         //   have the same id.

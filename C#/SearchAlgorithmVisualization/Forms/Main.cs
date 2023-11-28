@@ -1,3 +1,4 @@
+using Microsoft.VisualBasic.Devices;
 using SearchAlgorithmVisualization.Forms;
 using SearchAlgorithmVisualization.Helpers;
 using SearchAlgorithmVisualization.Properties;
@@ -5,6 +6,7 @@ using SearchAlgorithmVisualization.Searching;
 using System.Diagnostics;
 using System.Net.Security;
 using System.Runtime.CompilerServices;
+using System.Threading;
 
 namespace SearchAlgorithmVisualization
 {
@@ -21,6 +23,10 @@ namespace SearchAlgorithmVisualization
         private bool InitializeSimulation = false;
         private bool SimulationRunning = false; // Flag to determine if the animation is on-going regardless if paused
         private bool SimulationPaused = false;
+
+        // Flags to determine if heuristics and weight are editable
+        private bool NodeHeuristicsEditable = false;
+        private bool EdgeWeightEditable = false;
 
         private Debouncer ResetDebouncer = new Debouncer();
         private Debouncer MouseHoverDebouncer = new Debouncer();
@@ -73,6 +79,25 @@ namespace SearchAlgorithmVisualization
 
         private bool EdgeDeleteMode = false;
         private bool EdgeEditMode = false;
+
+        // Dragging flags
+        private Node? NodeDragged = null;
+        private bool MouseDragging = false;
+        private Stopwatch DragDuration = new Stopwatch();
+        private const double DRAG_THRESHOLD = 300F; // Milliseconds at which mousedown duration is considered as dragging
+
+        private List<(int, int)> Directions = new List<(int, int)>
+        {
+            (0, 0),     // Self
+            (0, -1),    // N
+            (1, -1),    // NE
+            (1, 0),     // E
+            (1, 1),     // SE
+            (0, 1),     // S
+            (-1, 1),    // SW
+            (-1, 0),    // W
+            (-1, -1)    // NW
+        };
 
         public MainForm()
         {
@@ -507,9 +532,30 @@ namespace SearchAlgorithmVisualization
             cg.FillEllipse(statusBrush, this.SimulationStatusLabel.Location.X + this.SimulationStatusLabel.Width * 1.2F - (SCALE / 2), this.SimulationStatusLabel.Location.Y + this.SimulationStatusLabel.Height / 2 - (SCALE / 2), SCALE, SCALE);
         }
 
+        private async void EditNodeHeuristics(Node? n)
+        {
+            if (n == null) return;
+
+            float? heuristics = null;
+
+            this.HeuristicsPromptForm.Show();
+
+            while (!this.PromptSuccess)
+            {
+                if (this.PromptCancelled) return;
+
+                await Task.Delay(100);
+            }
+
+            heuristics = this.HeuristicsPromptForm.GetInput();
+
+            n.Heuristics = heuristics ?? -1;
+            n.IsDefaultHeuristicValue = !heuristics.HasValue;
+        }
+
         private async void DrawingPanel_MouseDown(object sender, MouseEventArgs e)
         {
-            // Only works for right click
+            // Only works for left click
             if (e.Button == MouseButtons.Right) { return; }
 
             // Set constant node radius
@@ -572,21 +618,11 @@ namespace SearchAlgorithmVisualization
 
                 if (n == null) return;
 
-                float? heuristics = null;
-
-                this.HeuristicsPromptForm.Show();
-
-                while (!this.PromptSuccess)
-                {
-                    if (this.PromptCancelled) return;
-
-                    await Task.Delay(100);
-                }
-
-                heuristics = this.HeuristicsPromptForm.GetInput();
-
-                n.Heuristics = heuristics ?? -1;
-                n.IsDefaultHeuristicValue = !heuristics.HasValue;
+                // Add dragability to nodes
+                this.MouseDragging = true;
+                this.NodeDragged = n;
+                this.DragDuration.Reset();
+                this.DragDuration.Start();
 
                 // Rerender entities
                 this.RenderEntities();
@@ -597,6 +633,8 @@ namespace SearchAlgorithmVisualization
             // For Edge Editing
             else if (this.EdgeEditMode)
             {
+                if (!this.EdgeWeightEditable) return;
+
                 Edge? selected = this.GetEdgeNearMouse(this.edges, mouseX, mouseY);
 
                 if (selected == null) return;
@@ -1552,7 +1590,17 @@ namespace SearchAlgorithmVisualization
                 this.MouseDefaultDebouncer.Debounce(() => { this.Cursor = Cursors.Default; }, 5, SynchronizationContext.Current);
 
                 return;
-            };
+            }
+
+            // Node movement cursor only when drag is started
+            else if (this.NodeEditMode && this.NodeDragged != null)
+            {
+                // Change cursor to size-all
+                // Debounce to prevent too much calls
+                this.MouseDefaultDebouncer.Debounce(() => { this.Cursor = Cursors.SizeAll; }, 5, SynchronizationContext.Current);
+
+                return;
+            }
 
             // Record mouse position upon call of function
             Point mousePosition = this.DrawingPanel.PointToClient(Control.MousePosition);
@@ -1590,6 +1638,130 @@ namespace SearchAlgorithmVisualization
         private void DrawingPanel_MouseMove(object sender, MouseEventArgs e)
         {
             this.CursorHandWhenNodeOrEdgeHovered();
+
+            // For node dragability
+            if (this.NodeEditMode)
+            {
+                if (this.MouseDragging && this.NodeDragged != null)
+                {
+                    // Check if mouse is out of bounds 
+                    if (e.Y <= this.NodeDragged.Radius ||
+                    e.X >= this.DrawingPanel.Width - this.NodeDragged.Radius ||
+                    e.Y >= this.DrawingPanel.Height - this.NodeDragged.Radius ||
+                    e.X <= this.NodeDragged.Radius)
+                    {
+                        return;
+                    }
+
+                    this.NodeDragged.X = e.X;
+                    this.NodeDragged.Y = e.Y;
+
+                    this.RenderEntities();
+                }
+            }
+        }
+
+        private (int, int) FindNewNodePosition(int X, int Y)
+        {
+            if (this.NodeDragged == null) return (X, Y);
+
+            // Check for out of bounds
+            if (Y <= this.NodeDragged.Radius ||
+                X >= this.DrawingPanel.Width - this.NodeDragged.Radius ||
+                Y >= this.DrawingPanel.Height - this.NodeDragged.Radius ||
+                X <= this.NodeDragged.Radius)
+            {
+                return (X, Y);
+            }
+
+            foreach (var direction in this.Directions)
+            {
+                var newX = X + direction.Item1 * this.NodeDragged.Diameter;
+                var newY = Y + direction.Item2 * this.NodeDragged.Diameter;
+
+                if (FindNewNodePositionUtil(newX, newY))
+                {
+                    return (newX, newY);
+                }
+            }
+
+            // If no vacant spot is found in the immediate vicinity, recursively search in all this.Directions except self
+            for (int i = 1; i < this.Directions.Count; i++)
+            {
+                var newX = X + this.Directions[i].Item1 * this.NodeDragged.Diameter;
+                var newY = Y + this.Directions[i].Item2 * this.NodeDragged.Diameter;
+
+                var result = FindNewNodePosition(newX, newY);
+
+                if (result != (newX, newY))  // If a vacant spot is found, return it
+                {
+                    return result;
+                }
+            }
+
+            // If no vacant spot is found after checking all possible positions, return the original position
+            return (X, Y);
+        }
+
+        private bool FindNewNodePositionUtil(int X, int Y)
+        {
+            if (this.NodeDragged == null) return false;
+
+            // Check for out of bounds
+            if (Y <= this.NodeDragged.Radius ||
+                X >= this.DrawingPanel.Width - this.NodeDragged.Radius ||
+                Y >= this.DrawingPanel.Height - this.NodeDragged.Radius ||
+                X <= this.NodeDragged.Radius)
+            {
+                return false;
+            }
+
+            bool vacant = true;
+
+            foreach (Node existingNode in this.nodes)
+            {
+                if (existingNode == this.NodeDragged) continue;
+
+                if (Helpers.Helpers.dist(existingNode.X, existingNode.Y, X, Y) <= existingNode.Diameter)
+                {
+                    vacant = false;
+                    break;
+                }
+            }
+
+            return vacant;
+        }
+
+        private void DrawingPanel_MouseUp(object sender, MouseEventArgs e)
+        {
+            // For node dragability
+            if (this.MouseDragging && this.NodeDragged != null)
+            {
+                // Check if mouse is out of bounds 
+                if (!(e.Y <= this.NodeDragged.Radius ||
+                e.X >= this.DrawingPanel.Width - this.NodeDragged.Radius ||
+                e.Y >= this.DrawingPanel.Height - this.NodeDragged.Radius ||
+                e.X <= this.NodeDragged.Radius))
+                {
+                    var (newX, newY) = this.FindNewNodePosition(e.X, e.Y);
+
+                    this.NodeDragged.X = newX;
+                    this.NodeDragged.Y = newY;
+                }
+
+                this.RenderEntities();
+
+                double elapsed = this.DragDuration.Elapsed.TotalMilliseconds;
+
+                if (this.NodeHeuristicsEditable && elapsed <= DRAG_THRESHOLD)
+                {
+                    this.EditNodeHeuristics(this.NodeDragged);
+                }
+
+                this.MouseDragging = false;
+                this.NodeDragged = null;
+                this.DragDuration.Stop();
+            }
         }
 
         private void DrawingPanel_MouseLeave(object sender, EventArgs e)
@@ -1662,6 +1834,8 @@ namespace SearchAlgorithmVisualization
 
             switch (selected)
             {
+                // Node edit button is enabled for all cases to enable the node dragging ability
+
                 case "DFS":
                 case "BFS":
                     // Render default controls for DFS and BFS
@@ -1671,8 +1845,10 @@ namespace SearchAlgorithmVisualization
                     this.CustomHCostCheckBox.Checked = false;
                     this.CustomGCostCheckBox.Checked = false;
 
-                    this.NodeEditButton.Enabled = false;
                     this.EdgeEditButton.Enabled = false;
+
+                    this.NodeHeuristicsEditable = false;
+                    this.EdgeWeightEditable = false;
 
                     this.ShowWeightsText = false;
                     this.ShowHeuristicsText = false;
@@ -1689,6 +1865,9 @@ namespace SearchAlgorithmVisualization
 
                     this.EdgeEditButton.Enabled = false;
 
+                    this.NodeHeuristicsEditable = true;
+                    this.EdgeWeightEditable = false;
+
                     this.ShowWeightsText = false;
                     this.ShowHeuristicsText = true;
 
@@ -1702,7 +1881,8 @@ namespace SearchAlgorithmVisualization
                     this.HasTargetNodeCheckBox.Enabled = true;
                     this.HasTargetNodeCheckBox.Checked = true;
 
-                    this.NodeEditButton.Enabled = false;
+                    this.NodeHeuristicsEditable = false;
+                    this.EdgeWeightEditable = true;
 
                     this.ShowWeightsText = true;
                     this.ShowHeuristicsText = false;
@@ -1715,6 +1895,9 @@ namespace SearchAlgorithmVisualization
                     this.CustomHCostCheckBox.Checked = true;
                     this.HasTargetNodeCheckBox.Enabled = false;
                     this.HasTargetNodeCheckBox.Checked = true;
+
+                    this.NodeHeuristicsEditable = true;
+                    this.EdgeWeightEditable = true;
 
                     this.ShowWeightsText = true;
                     this.ShowHeuristicsText = true;
@@ -1743,6 +1926,9 @@ namespace SearchAlgorithmVisualization
             this.EdgeEditButton.Enabled = true;
 
             this.HasTargetNodeCheckBox.Checked = false;
+
+            this.NodeHeuristicsEditable = false;
+            this.EdgeWeightEditable = false;
         }
 
         private void SimulationStepBackButton_Click(object sender, EventArgs e)

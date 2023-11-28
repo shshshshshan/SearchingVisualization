@@ -356,6 +356,7 @@
             NodeModeRadioButton.Name = "NodeModeRadioButton";
             NodeModeRadioButton.Size = new Size(13, 30);
             NodeModeRadioButton.TabIndex = 0;
+            NodeModeRadioButton.TabStop = true;
             NodeModeRadioButton.TextAlign = ContentAlignment.MiddleCenter;
             NodeModeRadioButton.UseVisualStyleBackColor = true;
             NodeModeRadioButton.CheckedChanged += NodeModeRadioButton_CheckedChanged;
@@ -544,6 +545,7 @@
             DrawingPanel.MouseLeave += DrawingPanel_MouseLeave;
             DrawingPanel.MouseHover += DrawingPanel_MouseHover;
             DrawingPanel.MouseMove += DrawingPanel_MouseMove;
+            DrawingPanel.MouseUp += DrawingPanel_MouseUp;
             // 
             // AnimationClock
             // 
