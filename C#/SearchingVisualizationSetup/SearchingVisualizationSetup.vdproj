@@ -50,6 +50,14 @@
             "PrerequisitesLocation" = "2:1"
             "Url" = "8:"
             "ComponentsUrl" = "8:"
+                "Items"
+                {
+                    "{EDC2488A-8267-493A-A98E-7D9C3B36CDF3}:.NETFramework,Version=v4.7.2"
+                    {
+                    "Name" = "8:Microsoft .NET Framework 4.7.2 (x86 and x64)"
+                    "ProductCode" = "8:.NETFramework,Version=v4.7.2"
+                    }
+                }
             }
         }
         "Release"
@@ -202,7 +210,7 @@
         "Manufacturer" = "8:Shan"
         "ARPHELPTELEPHONE" = "8:"
         "ARPHELPLINK" = "8:"
-        "Title" = "8:SearchingVisualizationSetup"
+        "Title" = "8:SearchingVisualization"
         "Subject" = "8:"
         "ARPCONTACT" = "8:Shan"
         "Keywords" = "8:"
@@ -311,7 +319,7 @@
         }
         "Shortcut"
         {
-            "{970C0BB2-C7D0-45D7-ABFA-7EC378858BC0}:_74F3B442233C4AB89C5BBC245E32708C"
+            "{970C0BB2-C7D0-45D7-ABFA-7EC378858BC0}:_261E137D4687423489BAAD8EBAE60885"
             {
             "Name" = "8:Searching Visualization Tool"
             "Arguments" = "8:"
@@ -325,7 +333,7 @@
             "Icon" = "8:_22EDF40128EB4DD79CBAB83E855D348A"
             "Feature" = "8:"
             }
-            "{970C0BB2-C7D0-45D7-ABFA-7EC378858BC0}:_CE8FBAF66C864412B7EC3680F9AD228C"
+            "{970C0BB2-C7D0-45D7-ABFA-7EC378858BC0}:_59499D1B91494987AC5C010D613A804D"
             {
             "Name" = "8:Searching Visualization Tool"
             "Arguments" = "8:"
