@@ -1035,6 +1035,12 @@ namespace SearchAlgorithmVisualization
             this.RunSimulationButton.Enabled = false;
             this.RunSimulationButton.Cursor = Cursors.No;
 
+            // Reset other settings
+            this.NodeEditMode = false;
+            this.NodeDeleteMode = false;
+            this.EdgeEditMode = false;
+            this.EdgeDeleteMode = false;
+
             // Calculate the path based on selected algorithm
             var selected = this.AlgorithmDropdown.SelectedItem.ToString();
 
